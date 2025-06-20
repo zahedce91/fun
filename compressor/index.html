@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Compressor</title>
+    <link href="./assets/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #0d6efd;
+            background-color: #f8f9fa;
+        }
+        #preview {
+            max-width: 100%;
+            margin: 1rem 0;
+            max-height: 300px;
+            object-fit: contain;
+        }
+        .hidden {
+            display: none;
+        }
+        .settings {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 0.25em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner 0.75s linear infinite;
+        }
+        @keyframes spinner {
+            to { transform: rotate(360deg); }
+        }
+        .download-options {
+            margin-top: 1rem;
+        }
+        .download-format {
+            margin-bottom: 1rem;
+        }
+		.file-size {
+			font-size: 0.9rem;
+			color: #666;
+			margin-top: 0.5rem;
+		}
+    </style>
+</head>
+<script type="text/javascript">
+	atOptions = {
+		'key' : '7221f2aec7870853bd44414e46572f24',
+		'format' : 'iframe',
+		'height' : 50,
+		'width' : 320,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//www.highperformanceformat.com/7221f2aec7870853bd44414e46572f24/invoke.js"></script>
+<body class="container py-5">
+    <div class="card shadow">
+        <div class="card-body">
+            <h1 class="h3 mb-4 text-center">Image Compressor</h1>
+            
+            <div class="drop-zone" id="dropZone">
+                <p>Drag and drop image here or</p>
+                <input type="file" id="fileInput" class="hidden" accept="image/jpeg, image/png">
+                <label for="fileInput" class="btn btn-primary">Select Image</label>
+								<p> jpeg | png  </p>
+            </div>
+
+            <div class="settings " id="settings">
+                <div class="row g-3">
+                    <div class="col-md-6">
+						<div class="row g-3">
+							<div class="col-md-6">
+								<label class="form-label">Compression Type</label>
+								<div class="form-check">
+									<input class="form-check-input" type="radio" name="compressionType" id="qualityType" value="quality" checked="">
+									<label class="form-check-label" for="qualityType">Quality (%)</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="radio" name="compressionType" id="sizeType" value="size">
+									<label class="form-check-label" for="sizeType">Max Size (KB)</label>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<label for="customValue" class="form-label">Value</label>
+								<input type="number" id="customValue" class="form-control" min="1" max="100" value="30" step="1"></div>
+							</div>
+						</div>
+					<div class="col-md-1"> </div>
+                    <div class="col-md-5 bg-white">
+                      <label class="form-label">Predefined Quality Levels:
+							<ul class="list-group list-group-flush list-group-numbered">
+								<li class="list-group-item py-0">Low (25% quality)</li>
+								<li class="list-group-item py-0">Medium (50% quality)</li>
+								<li class="list-group-item py-0">Good (75% quality)</li>
+							</ul>
+						</label>  
+                        
+                    <div class="form-check">
+							<input class="form-check-input" type="checkbox" id="AddPredefinedTypes">
+							<label class="form-check-label" for="AddPredefinedTypes">
+								Include Predefined Quality Levels
+							</label>
+						</div></div>
+                </div>
+            </div>
+
+            <div id="previewSection" class="hidden">
+                <img id="preview" class="img-fluid">
+				<div class="file-size" id="fileSizeInfo"></div>
+                <div class="mt-3">
+                    <button id="compressBtn" class="btn btn-primary w-100">Compress Image</button>
+                    <div class="download-options hidden" id="downloadOptions">
+                        <div class="download-format">
+                            <label class="form-label">Download Format:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="downloadFormat" 
+                                    id="separateFormat" value="separate" checked>
+                                <label class="form-check-label" for="separateFormat">Individual Files</label>
+                            </div>
+							<div class="form-check">
+                                <input class="form-check-input" type="radio" name="downloadFormat" 
+                                    id="zipFormat" value="zip" >
+                                <label class="form-check-label" for="zipFormat">ZIP Archive</label>
+                            </div>
+                        </div>
+                        <button id="downloadBtn" class="btn btn-success w-100"></button>
+                    </div>
+                    <div id="loading" class="text-center mt-2 hidden">
+                        <div class="loading-spinner"></div>
+                        <span class="ms-2">Compressing...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./assets/bootstrap.bundle.min.js"></script>
+    <script src="./assets/jszip.min.js"></script>
+    <script>
+        const elements = {
+            dropZone: document.getElementById('dropZone'),
+            fileInput: document.getElementById('fileInput'),
+            previewSection: document.getElementById('previewSection'),
+            preview: document.getElementById('preview'),
+            compressBtn: document.getElementById('compressBtn'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            loading: document.getElementById('loading'),
+            settings: document.getElementById('settings'),
+            customValue: document.getElementById('customValue'),
+            downloadOptions: document.getElementById('downloadOptions'),
+			fileSizeInfo: document.getElementById('fileSizeInfo')
+        };
+
+        let currentFile = null;
+        let compressedFiles = [];
+
+        // Event Listeners
+        document.querySelectorAll('input[name="compressionType"]').forEach(radio => {
+            radio.addEventListener('change', updateInputConstraints);
+        });
+
+        elements.dropZone.addEventListener('dragover', handleDragOver);
+        elements.dropZone.addEventListener('dragleave', handleDragLeave);
+        elements.dropZone.addEventListener('drop', handleDrop);
+        elements.fileInput.addEventListener('change', handleFileInput);
+        elements.compressBtn.addEventListener('click', startCompression);
+        elements.downloadBtn.addEventListener('click', handleDownload);
+        document.querySelectorAll('input[name="downloadFormat"]').forEach(radio => {
+            radio.addEventListener('change', updateDownloadButton);
+        });
+
+        function updateInputConstraints() {
+            const isQuality = document.querySelector('#qualityType').checked;
+            elements.customValue[isQuality ? 'setAttribute' : 'removeAttribute']('min', '1');
+            elements.customValue[isQuality ? 'setAttribute' : 'removeAttribute']('max', '100');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            elements.dropZone.classList.add('dragover');
+        }
+
+        function handleDragLeave() {
+            elements.dropZone.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            elements.dropZone.classList.remove('dragover');
+            currentFile = e.dataTransfer.files[0];
+            handleFile(currentFile);
+        }
+
+        function handleFileInput(e) {
+            currentFile = e.target.files[0];
+            handleFile(currentFile);
+        }
+
+        function handleFile(file) {
+            if (!file?.type.match(/image\/(jpeg|png)/)) {
+                alert('Please upload a JPEG or PNG image');
+                return;
+            }
+			
+			// Show file size
+			const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
+			elements.fileSizeInfo.textContent = `Original file size: ${fileSizeMB} MB`;
+			
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                elements.preview.src = e.target.result;
+                elements.previewSection.classList.remove('hidden');
+                elements.settings.classList.remove('hidden');
+                elements.downloadOptions.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+		
+		function formatFileSize(bytes) {
+			if (bytes === 0) return '0 Bytes';
+			const k = 1024;
+			const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+			const i = Math.floor(Math.log(bytes) / Math.log(k));
+			return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+		}
+	
+        async function startCompression() {
+            if (!currentFile) {
+                alert('Please select a file first');
+                return;
+            }
+
+            try {
+                elements.compressBtn.disabled = true;
+                elements.loading.classList.remove('hidden');
+                compressedFiles = [];
+                
+                const result = await compressImage(currentFile);
+                compressedFiles = result.files;
+                
+                elements.downloadOptions.classList.remove('hidden');
+                updateDownloadButton();
+            } catch (error) {
+                alert(`Error compressing image: ${error.message}`);
+            } finally {
+                elements.compressBtn.disabled = false;
+                elements.loading.classList.add('hidden');
+            }
+        }
+
+        function updateDownloadButton() {
+            const totalSize = compressedFiles.reduce((sum, file) => sum + file.size, 0);
+            const isZip = document.querySelector('#zipFormat').checked;
+            elements.downloadBtn.textContent = isZip 
+                ? `Download as ZIP (${(totalSize/1024/1024).toFixed(1)}MB)`
+                : `Download ${compressedFiles.length} Files`;
+        }
+
+        async function handleDownload() {
+            const isZip = document.querySelector('#zipFormat').checked;
+            
+            if (isZip) {
+                const zip = new JSZip();
+                compressedFiles.forEach(file => zip.file(file.name, file.blob));
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                triggerDownload(URL.createObjectURL(zipBlob), `compressed-images-${Date.now()}.zip`);
+            } else {
+                compressedFiles.forEach((file, index) => {
+                    setTimeout(() => triggerDownload(
+                        URL.createObjectURL(file.blob),
+                        file.name
+                    ), index * 100);
+                });
+            }
+        }
+
+        function triggerDownload(url, filename) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        async function compressImage(file) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const img = new Image();
+                    img.src = URL.createObjectURL(file);
+                    
+                    await new Promise((resolve) => {
+                        img.onload = resolve;
+                        img.onerror = () => reject(new Error('Failed to load image'));
+                    });
+
+                    const files = [];
+                    const qualities = [];
+                    const PredefinedType = document.querySelector('#AddPredefinedTypes').checked;
+
+                    // Add predefined qualities if checked
+                    if(PredefinedType){
+                        qualities.push(
+                            { name: 'low', quality: 0.25 },
+                            { name: 'medium', quality: 0.50 },
+                            { name: 'good', quality: 0.75 }
+                        );
+                    }
+
+                    // Add custom compression
+                    const compressionType = document.querySelector('input[name="compressionType"]:checked').value;
+                    const customInput = parseFloat(elements.customValue.value);
+                    
+                    if (customInput && !isNaN(customInput)) {
+                        if (compressionType === 'quality') {
+                            const quality = Math.min(Math.max(customInput / 100, 0.1), 1);
+                            qualities.push({ name: `custom-${customInput}%`, quality });
+                        } else {
+                            const maxSizeBytes = customInput * 1024;
+                            let low = 0.1;
+                            let high = 0.9;
+                            let bestQuality = 0.1;
+                            let bestBlob = null;
+
+                            // Binary search for optimal quality
+                            for (let i = 0; i < 20; i++) {
+                                const quality = (low + high) / 2;
+                                const canvas = createCanvas(img, quality);
+                                const blob = await canvasToBlob(canvas, quality);
+                                
+                                if (blob.size <= maxSizeBytes) {
+                                    bestQuality = quality;
+                                    bestBlob = blob;
+                                    low = quality;
+                                } else {
+                                    high = quality;
+                                }
+                            }
+
+                            if (!bestBlob) {
+                                const canvas = createCanvas(img, 0.1);
+                                bestBlob = await canvasToBlob(canvas, 0.1);
+                            }
+
+                            qualities.push({ 
+                                name: `custom-${customInput}KB`, 
+                                quality: Number(bestQuality.toFixed(2))
+                            });
+                        }
+                    }
+
+                    // Process all quality versions
+                    for (const { name, quality } of qualities) {
+                        const canvas = createCanvas(img, quality);
+                        const blob = await canvasToBlob(canvas, quality);
+                        files.push({
+                            name: `compressed-${name}.jpg`,
+                            blob: blob,
+                            size: blob.size
+                        });
+                    }
+
+                    URL.revokeObjectURL(img.src);
+                    resolve({ files });
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        function createCanvas(img, quality) {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            return canvas;
+        }
+
+        function canvasToBlob(canvas, quality) {
+            return new Promise(resolve => 
+                canvas.toBlob(resolve, 'image/jpeg', quality)
+            );
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MikroTik Dual WAN Load Balancing Setup Guide</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; color: #333; }
+    h1, h2, h3 { color: #0056b3; }
+    code { background: #eef; padding: 2px 5px; border-radius: 5px; }
+    pre { background: #eef; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    section { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    ul { margin-top: 0; }
+  </style>
+</head>
+<body>
+
+<h1>MikroTik Dual WAN Load Balancing (PCC) Full Setup</h1>
+<p>This guide combines <strong>Terminal Commands</strong> and <strong>Winbox Manual Steps</strong> into one smooth flow. It explains <em>what</em> each step does, <em>why</em> it is needed, and <em>what it changes</em> inside the router.</p>
+
+<section>
+  <h2>Important Terms</h2>
+  <ul>
+    <li><strong>WAN:</strong> Wide Area Network, usually your internet connection.</li>
+    <li><strong>LAN:</strong> Local Area Network, your internal network (PCs, phones).</li>
+    <li><strong>PPPoE:</strong> Protocol for connecting to ISP using username/password.</li>
+    <li><strong>PCC:</strong> Per Connection Classifier - used for traffic load balancing.</li>
+    <li><strong>NAT:</strong> Network Address Translation - shares one public IP for many devices.</li>
+    <li><strong>Mangle:</strong> Firewall feature used to mark packets and connections.</li>
+    <li><strong>Routing Mark:</strong> Special tag telling router how to send traffic.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>0. Reset Router to Default (Optional but Recommended)</h2>
+  <p><strong>Why?</strong> Clear any old or unknown settings that might cause problems.</p>
+  <p><strong>What it changes?</strong> Removes all configuration, leaving the router "fresh".</p>
+
+  <h3>Terminal Command</h3>
+  <pre>/system reset-configuration no-defaults=yes skip-backup=yes</pre>
+
+  <h3>Winbox Manual</h3>
+  <ul>
+    <li>System → Reset Configuration → Check "No Default Configuration" → Reset.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>1. Rename Interfaces</h2>
+  <p><strong>Why?</strong> Makes ports easy to recognize (WAN1, WAN2, LAN).</p>
+  <p><strong>What it changes?</strong> Updates the interface names in router configuration for better management.</p>
+
+  <h3>Terminal Command</h3>
+  <pre>
+/interface ethernet
+set [ find default-name=ether1 ] name=ether1-WAN1
+set [ find default-name=ether2 ] name=ether2-WAN2
+set [ find default-name=ether3 ] name=ether3-LAN
+set [ find default-name=ether4 ] name=ether4-LAN
+set [ find default-name=ether5 ] name=ether5-LAN
+  </pre>
+
+  <h3>Winbox Manual</h3>
+  <ul>
+    <li>Step 1: Open Interface List
+      <ul>
+        <li>Go to <strong>Interfaces</strong>.</li>
+      </ul>
+    </li>
+    <li>Step 2: Rename Interface
+      <ul>
+        <li>Double-click on <code>ether1</code> to open the interface settings.</li>
+        <li>In the <strong>Name</strong> field, change the name to <code>ether1-WAN1</code>.</li>
+        <li>Click <strong>Apply</strong> and <strong>OK</strong>.</li>
+      </ul>
+    </li>
+    <li>Step 3: Repeat for Other Interfaces
+      <ul>
+        <li>Double-click <code>ether2</code> → Change the name to <code>ether2-WAN2</code>.</li>
+        <li>Repeat for <code>ether3</code>, <code>ether4</code>, and <code>ether5</code>, changing their names to <code>ether3-LAN</code>, <code>ether4-LAN</code>, and <code>ether5-LAN</code> respectively.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p><strong>Important Notes:</strong></p>
+  <ul>
+    <li>Helps identify network ports (e.g., WAN and LAN) clearly for easier management and troubleshooting.</li>
+    <li>Does not affect functionality, IP addressing, or require a reboot, but ensures better clarity in configurations.</li>
+    <li>Use meaningful names and avoid special characters.</li>
+  </ul>
+</section>
+<section>
+  <h2>2. Create LAN Bridge (Critical Early Step)</h2>
+  <p><strong>Why?</strong> Combine multiple LAN ports into one logical interface for unified network management.</p>
+  <p><strong>What it changes?</strong> Creates a bridge interface that groups ether3-LAN, ether4-LAN, and ether5-LAN into a single network segment.</p>
+
+  <h3>Terminal Command</h3>
+  <pre>
+/interface bridge
+add name=bridge-LAN
+
+/interface bridge port
+add bridge=bridge-LAN interface=ether3-LAN
+add bridge=bridge-LAN interface=ether4-LAN
+add bridge=bridge-LAN interface=ether5-LAN
+  </pre>
+
+  <h3>Winbox Manual</h3>
+  <ul>
+    <li>Step 1: Create a New Bridge Interface
+      <ul>
+        <li>Go to <strong>Bridge</strong> → <strong>+</strong>.</li>
+        <li>In the <strong>General</strong> tab:
+          <ul>
+            <li>Enter the <strong>Name</strong> as <code>bridge-LAN</code>.</li>
+          </ul>
+        </li>
+        <li>Click <strong>Apply</strong> and then <strong>OK</strong> to create the bridge.</li>
+      </ul>
+    </li>
+    <li>Step 2: Add LAN Interfaces to the Bridge
+      <ul>
+        <li>Go to <strong>Bridge</strong> → <strong>Ports</strong>.</li>
+        <li>Click the <strong>+</strong> button to add a new port.</li>
+        <li>In the <strong>General</strong> tab:
+          <ul>
+            <li>For <strong>Bridge</strong>, select <code>bridge-LAN</code>.</li>
+            <li>For <strong>Interface</strong>, select <code>ether3-LAN</code>.</li>
+          </ul>
+        </li>
+        <li>Click <strong>Apply</strong> and then <strong>OK</strong>.</li>
+        <li>Repeat this step for <code>ether4-LAN</code> and <code>ether5-LAN</code>.</li>
+      </ul>
+    </li>
+    <li>Step 3: Verify the Bridge Setup
+      <ul>
+        <li>Go to <strong>Bridge</strong> → <strong>Ports</strong>.</li>
+        <li>Ensure that <code>ether3-LAN</code>, <code>ether4-LAN</code>, and <code>ether5-LAN</code> are listed under the <strong>Ports</strong> tab with the <strong>Bridge</strong> column showing <code>bridge-LAN</code>.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p><strong>Important Notes:</strong></p>
+  <ul>
+    <li>Combines multiple LAN ports into a single logical network segment for simplified management.</li>
+    <li>All devices connected to the bridged interfaces should be on the same subnet.</li>
+    <li>Ensure proper IP addressing, firewall rules, and physical connectivity for optimal performance.</li>
+  </ul>
+</section>
+<section>
+  <h2>3. Assign IP Address to LAN Bridge</h2>
+  <p><strong>Why?</strong> Provide a gateway IP for your local network.</p>
+  <p><strong>What it changes?</strong> Router now uses <code>bridge-LAN</code> as its LAN interface with IP <code>192.168.1.1/24</code>.</p>
+
+  <h3>Terminal Command</h3>
+  <pre>
+/ip address
+add address=192.168.1.1/24 interface=bridge-LAN network=192.168.1.0
+  </pre>
+
+  <h3>Winbox Manual</h3>
+  <ul>
+    <li>Step 1: Assign IP Address to LAN Bridge
+      <ul>
+        <li>Go to <strong>IP</strong> → <strong>Addresses</strong>.</li>
+        <li>Click the <strong>+</strong> button to add a new address.</li>
+        <li>In the <strong>General</strong> tab:
+          <ul>
+            <li>Address: <code>192.168.1.1/24</code></li>
+            <li>Interface: <code>bridge-LAN</code></li>
+            <li>Network: <code>192.168.1.0</code></li>
+          </ul>
+        </li>
+        <li>Click <strong>Apply</strong> and then <strong>OK</strong> to save the configuration.</li>
+      </ul>
+    </li>
+    <li>Step 2: Verify the IP Address Assignment
+      <ul>
+        <li>Go to <strong>IP</strong> → <strong>Addresses</strong> again.</li>
+        <li>Ensure <code>192.168.1.1/24</code> is listed under the <strong>Addresses</strong> tab with the <code>bridge-LAN</code> interface.</li>
+      </ul>
+    </li>
+    <li>Step 3: Test Connectivity
+      <ul>
+        <li>Connect a device to the LAN network.</li>
+        <li>Set the device's default gateway to <code>192.168.1.1</code>.</li>
+        <li>Verify the device can communicate with the router by pinging <code>192.168.1.1</code>.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p><strong>Important Notes:</strong></p>
+  <ul>
+    <li>Ensure the router's IP is outside the DHCP pool range and does not overlap with static IPs.</li>
+    <li>Create DHCP reservations for static IP devices to avoid conflicts.</li>
+    <li>Verify the <code>192.168.1.0/24</code> subnet matches your local network devices.</li>
+    <li>Check the <code>bridge-LAN</code> configuration and physical connections if devices aren't getting IPs.</li>
+  </ul>
+</section>
+<section>
+  <h2>4. Setup DHCP Server</h2>
+  <p><strong>Why?</strong> Automatically assign IPs to LAN devices through the bridge.</p>
+  <p><strong>What it changes?</strong> DHCP server now runs on <code>bridge-LAN</code> instead of individual ports.</p>
+
+  <h3>Terminal Command</h3>
+  <pre>
+/ip pool
+add name=LAN-Pool ranges=192.168.1.10-192.168.1.254
+
+/ip dhcp-server
+add address-pool=LAN-Pool interface=bridge-LAN name=LAN-DHCP
+/ip dhcp-server enable LAN-DHCP
+
+/ip dhcp-server network
+add address=192.168.1.0/24 gateway=192.168.1.1 dns-server=8.8.8.8,1.1.1.1
+  </pre>
+
+  <h3>Winbox Manual</h3>
+  <ul>
+    <li><strong>Step 1: Create DHCP Pool</strong>
+      <ul>
+        <li>Go to <strong>IP</strong> → <strong>Pool</strong></li>
+        <li>Click <strong>+</strong> to add new pool</li>
+        <li><strong>General Tab:</strong>
+          <ul>
+            <li>Name: <code>LAN-Pool</code></li>
+            <li>Addresses: <code>192.168.1.10-192.168.1.254</code></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+    <li><strong>Step 2: Create DHCP Server</strong>
+      <ul>
+        <li>Navigate to <strong>IP</strong> → <strong>DHCP Server</strong></li>
+        <li>Click <strong>+</strong> to add new server</li>
+        <li><strong>General Tab:</strong>
+          <ul>
+            <li>Name: <code>LAN-DHCP</code></li>
+            <li>Interface: <code>bridge-LAN</code></li>
+            <li>Address Pool: <code>LAN-Pool</code></li>
+            <li>Check <strong>Enabled</strong></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+    <li><strong>Step 3: Configure DHCP Network</strong>
+      <ul>
+        <li>Go to <strong>IP</strong> → <strong>DHCP Server</strong> → <strong>Networks</strong></li>
+        <li>Click <strong>+</strong> to add network</li>
+        <li><strong>General Tab:</strong>
+          <ul>
+            <li>Address: <code>192.168.1.0/24</code></li>
+            <li>Gateway: <code>192.168.1.1</code></li>
+            <li>DNS Server: <code>8.8.8.8,1.1.1.1</code></li>
+            <li>Check <strong>Add ARP Entry</strong></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+    <li><strong>Step 4: Verify DHCP Operation</strong>
+      <ul>
+        <li>Check <strong>IP</strong> → <strong>DHCP Server</strong> → <strong>Leases</strong>
+          <ul>
+            <li>Should show connected devices after they request IPs</li>
+          </ul>
+        </li>
+        <li>Confirm server status shows <code>running</code> in DHCP Server list</li>
+        <li>Test client connectivity:
+          <ul>
+            <li>Device should get IP in 192.168.1.10-254 range</li>
+            <li>Internet access should work after completing all setup steps</li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+
+  <p><strong>Important Notes:</strong></p>
+  <ul>
+    <li>Ensure router's bridge-LAN IP (192.168.1.1) is outside DHCP pool range</li>
+    <li>For static IP devices, create reservations in <strong>Leases</strong> tab</li>
+    <li>DNS servers can be changed to ISP-provided or company-specific servers</li>
+    <li>Adjust lease time (default 10m) in DHCP Server settings if needed</li>
+    <li>If devices don't get IPs:
+      <ul>
+        <li>Check firewall rules aren't blocking DHCP (ports 67/68)</li>
+        <li>Verify bridge-LAN has correct IP address</li>
+        <li>Confirm physical LAN connections to bridge ports</li>
+      </ul>
+    </li>
+  </ul>
+</section>
+<section>
+  <h2>5. Setup PPPoE Clients</h2>
+  <p><strong>Why?</strong> Establish internet connections with ISPs.</p>
+  <p><strong>What it changes?</strong> Adds two virtual PPPoE interfaces connected to ISP1 and ISP2.</p>
+
+  <h3>Terminal Command</h3>
+  <pre>
+/interface pppoe-client
+add name=pppoe-WAN1 interface=ether1-WAN1 user="username-ISP1" password="password-ISP1" disabled=no
+add name=pppoe-WAN2 interface=ether2-WAN2 user="username-ISP2" password="password-ISP2" disabled=no
+  </pre>
+
+  <h3>Winbox Manual</h3>
+  <ul>
+    <li><strong>Step 1: Access PPP Configuration</strong>
+      <ul>
+        <li>Go to <strong>PPP</strong> → <strong>Interfaces</strong></li>
+      </ul>
+    </li>
+
+    <li><strong>Step 2: Create First PPPoE Client (ISP1)</strong>
+      <ul>
+        <li>Click <strong>+</strong> → Select <strong>PPPoE Client</strong></li>
+        <li><strong>General Tab:</strong>
+          <ul>
+            <li>Name: <code>pppoe-WAN1</code></li>
+            <li>Interface: <code>ether1-WAN1</code></li>
+            <li>Check <strong>Enabled</strong></li>
+          </ul>
+        </li>
+        <li><strong>Dial Out Tab:</strong>
+          <ul>
+            <li>User: <em>Your ISP1 username</em></li>
+            <li>Password: <em>Your ISP1 password</em></li>
+            <li>Leave other fields blank unless required by ISP</li>
+          </ul>
+        </li>
+        <li><strong>Advanced Tab (Optional):</strong>
+          <ul>
+            <li>MRU: <code>1492</code> (default)</li>
+            <li>Service Name: Leave empty unless specified by ISP</li>
+          </ul>
+        </li>
+        <li>Click <strong>OK</strong> to create</li>
+      </ul>
+    </li>
+
+    <li><strong>Step 3: Create Second PPPoE Client (ISP2)</strong>
+      <ul>
+        <li>Right-click first client → <strong>Copy</strong></li>
+        <li>Double-click new client to edit:
+          <ul>
+            <li><strong>General Tab:</strong>
+              <ul>
+                <li>Name: <code>pppoe-WAN2</code></li>
+                <li>Interface: <code>ether2-WAN2</code></li>
+              </ul>
+            </li>
+            <li><strong>Dial Out Tab:</strong>
+              <ul>
+                <li>Update with ISP2 credentials</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+    <li><strong>Step 4: Verify Connections</strong>
+      <ul>
+        <li>Check interface status in <strong>PPP → Interfaces</strong>:
+          <ul>
+            <li>Status should show <code>connected</code></li>
+            <li>IP address should appear under <code>Remote Address</code></li>
+          </ul>
+        </li>
+        <li>Confirm in <strong>Interfaces</strong> list:
+          <ul>
+            <li>Both <code>pppoe-WAN1</code> and <code>pppoe-WAN2</code> should show R (running) flag</li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+
+  <p><strong>Important Notes:</strong></p>
+  <ul>
+    <li>Ensure physical WAN interfaces have no IP addresses assigned (PPPoE handles this)</li>
+    <li>If connection fails:
+      <ul>
+        <li>Verify physical cable connection to modem/ONT</li>
+        <li>Check for VLAN requirements from ISP</li>
+        <li>Confirm credentials are case-sensitive</li>
+      </ul>
+    </li>
+    <li>Password field will show asterisks - double-check for typos</li>
+    <li>Use <strong>PPPoE Client</strong> type, not Server or other PPP types</li>
+  </ul>
+</section>
+<section>
+  <h2>6. NAT Rules (Masquerade)</h2>
+  <p><strong>Why?</strong> Allow LAN devices to share both WAN IPs.</p>
+  <p><strong>What it changes?</strong> Creates NAT rules for outbound traffic on both PPPoE interfaces.</p>
+
+  <h3>Terminal Command</h3>
+  <pre>
+/ip firewall nat
+add chain=srcnat out-interface=pppoe-WAN1 action=masquerade
+add chain=srcnat out-interface=pppoe-WAN2 action=masquerade
+  </pre>
+
+  <h3>Winbox Manual</h3>
+  <ul>
+    <li><strong>Step 1: Access NAT Configuration</strong>
+      <ul>
+        <li>Navigate to <strong>IP</strong> → <strong>Firewall</strong> → <strong>NAT</strong></li>
+      </ul>
+    </li>
+
+    <li><strong>Step 2: Create First NAT Rule (WAN1)</strong>
+      <ul>
+        <li>Click the <strong>+</strong> button to add new rule</li>
+        <li><strong>General Tab:</strong>
+          <ul>
+            <li>Chain: <code>srcnat</code> (Source NAT)</li>
+            <li>Out. Interface: <code>pppoe-WAN1</code></li>
+          </ul>
+        </li>
+        <li><strong>Action Tab:</strong>
+          <ul>
+            <li>Action: <code>masquerade</code></li>
+            <li>Leave other settings at defaults</li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+    <li><strong>Step 3: Create Second NAT Rule (WAN2)</strong>
+      <ul>
+        <li>Right-click first rule → <strong>Copy</strong></li>
+        <li>Double-click new rule to edit:</li>
+        <li><strong>General Tab:</strong>
+          <ul>
+            <li>Change Out. Interface to <code>pppoe-WAN2</code></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+    <li><strong>Step 4: Verify NAT Rules</strong>
+      <ul>
+        <li>Final NAT table should show two active rules:</li>
+        <ol>
+          <li>Masquerade for pppoe-WAN1</li>
+          <li>Masquerade for pppoe-WAN2</li>
+        </ol>
+        <li>Check <strong>Bytes</strong> counters after traffic flows to confirm working NAT</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p><strong>Important Notes:</strong></p>
+  <ul>
+    <li>NAT rules must be placed <em>before</em> any existing NAT rules in the list</li>
+    <li>Ensure PPPoE interfaces show <em>status=connected</em> before testing</li>
+    <li>Masquerade automatically uses the interface's public IP for translation</li>
+    <li>For security, keep these rules at the top of your NAT list</li>
+    <li>If using static IPs instead of PPPoE, replace interface with physical WAN port</li>
+  </ul>
+</section>
+<section>
+  <h2>7. Mangle Rules (Load Balancing by PCC)</h2>
+  <p><strong>Why?</strong> Split traffic between WANs using connection classifier.</p>
+  <p><strong>What it changes?</strong> Marks connections/packets for routing decisions.</p>
+
+  <h3>Terminal Command</h3>
+  <pre>
+/ip firewall mangle
+add chain=prerouting in-interface=bridge-LAN connection-mark=no-mark action=mark-connection new-connection-mark=ISP1_conn passthrough=yes per-connection-classifier=both-addresses:2/0
+add chain=prerouting in-interface=bridge-LAN connection-mark=no-mark action=mark-connection new-connection-mark=ISP2_conn passthrough=yes per-connection-classifier=both-addresses:2/1
+
+add chain=prerouting connection-mark=ISP1_conn action=mark-routing new-routing-mark=to_ISP1
+add chain=prerouting connection-mark=ISP2_conn action=mark-routing new-routing-mark=to_ISP2
+  </pre>
+
+  <h3>Winbox Manual</h3>
+  <ul>
+    <li><strong>Step 1: Access Mangle Rules</strong>
+      <ul>
+        <li>Go to <strong>IP</strong> → <strong>Firewall</strong> → <strong>Mangle</strong></li>
+      </ul>
+    </li>
+
+    <li><strong>Step 2: Create First Connection Marker (ISP1)</strong>
+      <ul>
+        <li>Click <strong>+</strong> to add new rule</li>
+        <li><strong>General Tab:</strong>
+          <ul>
+            <li>Chain: <code>prerouting</code></li>
+            <li>In. Interface: <code>bridge-LAN</code></li>
+            <li>Connection Mark: <code>no-mark</code></li>
+          </ul>
+        </li>
+        <li><strong>Action Tab:</strong>
+          <ul>
+            <li>Action: <code>mark connection</code></li>
+            <li>New Connection Mark: <code>ISP1_conn</code></li>
+            <li>Check <strong>Passthrough</strong></li>
+          </ul>
+        </li>
+        <li><strong>Extra Tab:</strong>
+          <ul>
+            <li>Per Connection Classifier: <code>both-addresses:2/0</code></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+    <li><strong>Step 3: Create Second Connection Marker (ISP2)</strong>
+      <ul>
+        <li>Duplicate previous rule using <strong>Copy</strong> button</li>
+        <li>Modify:
+          <ul>
+            <li>New Connection Mark: <code>ISP2_conn</code></li>
+            <li>Per Connection Classifier: <code>both-addresses:2/1</code></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+    <li><strong>Step 4: Create First Routing Marker (to_ISP1)</strong>
+      <ul>
+        <li>Add new rule with <strong>+</strong></li>
+        <li><strong>General Tab:</strong>
+          <ul>
+            <li>Chain: <code>prerouting</code></li>
+            <li>Connection Mark: <code>ISP1_conn</code></li>
+          </ul>
+        </li>
+        <li><strong>Action Tab:</strong>
+          <ul>
+            <li>Action: <code>mark routing</code></li>
+            <li>New Routing Mark: <code>to_ISP1</code></li>
+            <li>Uncheck <strong>Passthrough</strong></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+    <li><strong>Step 5: Create Second Routing Marker (to_ISP2)</strong>
+      <ul>
+        <li>Copy previous routing rule</li>
+        <li>Modify:
+          <ul>
+            <li>Connection Mark: <code>ISP2_conn</code></li>
+            <li>New Routing Mark: <code>to_ISP2</code></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+    <li><strong>Step 6: Verify Rules Order</strong>
+      <ul>
+        <li>Ensure rules are in this exact order:
+          <ol>
+            <li>ISP1 connection marker</li>
+            <li>ISP2 connection marker</li>
+            <li>ISP1 routing marker</li>
+            <li>ISP2 routing marker</li>
+          </ol>
+        </li>
+        <li>Use drag-and-drop to reorder if needed</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p><strong>Important Notes:</strong></p>
+  <ul>
+    <li>The <code>both-addresses:2/0</code> parameter splits traffic 50/50 between WANs</li>
+    <li>Connection markers must come before routing markers in rules order</li>
+    <li>Keep <strong>Passthrough</strong> enabled only for connection marking rules</li>
+    <li>Test with continuous ping to 8.8.8.8 while disabling one WAN to verify failover</li>
+  </ul>
+</section>
+<section>
+  <h2>8. Setup Routes</h2>
+  <p><strong>Why?</strong> Direct traffic based on routing marks.</p>
+  <p><strong>What it changes?</strong> Creates primary/failover routes and PCC-based routing.</p>
+
+  <h3>Terminal Command</h3>
+  <pre>
+/ip route
+add dst-address=0.0.0.0/0 gateway=pppoe-WAN1 routing-mark=to_ISP1 check-gateway=ping
+add dst-address=0.0.0.0/0 gateway=pppoe-WAN2 routing-mark=to_ISP2 check-gateway=ping
+
+# Default routes for router's own traffic
+add dst-address=0.0.0.0/0 gateway=pppoe-WAN1 distance=1 check-gateway=ping
+add dst-address=0.0.0.0/0 gateway=pppoe-WAN2 distance=2 check-gateway=ping
+  </pre>
+
+  <h3>Winbox Manual</h3>
+  <ul>
+    <li><strong>Step 1: Open Routing Table</strong>
+      <ul>
+        <li>Go to <strong>IP</strong> → <strong>Routes</strong></li>
+      </ul>
+    </li>
+
+    <li><strong>Step 2: Add PCC-based Routes</strong>
+      <ul>
+        <li>Click the <strong>+</strong> button to create new route</li>
+        <li><strong>General Tab:</strong>
+          <ul>
+            <li>Dst. Address: <code>0.0.0.0/0</code> (all traffic)</li>
+            <li>Gateway: Select <code>pppoe-WAN1</code></li>
+            <li>Routing Mark: Select <code>to_ISP1</code></li>
+            <li>Check <strong>Enable</strong></li>
+          </ul>
+        </li>
+        <li><strong>Advanced Tab:</strong>
+          <ul>
+            <li>Check Gateway: <code>ping</code></li>
+          </ul>
+        </li>
+        <li>Repeat for second route:
+          <ul>
+            <li>Gateway: <code>pppoe-WAN2</code></li>
+            <li>Routing Mark: <code>to_ISP2</code></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+    <li><strong>Step 3: Add Failover Routes</strong>
+      <ul>
+        <li>Create new route with <strong>+</strong> button</li>
+        <li><strong>General Tab:</strong>
+          <ul>
+            <li>Dst. Address: <code>0.0.0.0/0</code></li>
+            <li>Gateway: <code>pppoe-WAN1</code></li>
+            <li>Distance: <code>1</code> (primary)</li>
+          </ul>
+        </li>
+        <li>Create another route:
+          <ul>
+            <li>Gateway: <code>pppoe-WAN2</code></li>
+            <li>Distance: <code>2</code> (backup)</li>
+          </ul>
+        </li>
+        <li><strong>For Both:</strong>
+          <ul>
+            <li>Advanced Tab → Check Gateway: <code>ping</code></li>
+            <li>Keep Routing Mark as <code>main</code></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+    <li><strong>Step 4: Verify Routes</strong>
+      <ul>
+        <li>Final routing table should show 4 active routes</li>
+        <li>Two with routing marks (to_ISP1/to_ISP2)</li>
+        <li>Two default routes with distances 1 and 2</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p><strong>Important Note:</strong> Ensure PPPoE interfaces (pppoe-WAN1/pppoe-WAN2) show <em>status=connected</em> before creating routes.</p>
+</section>
+<section>
+  <h2>Final Notes</h2>
+  <ul>
+    <li><strong>Test Load Balancing:</strong> Run simultaneous speed tests from multiple devices.</li>
+    <li><strong>Failover Test:</strong> Disconnect one WAN → traffic should switch within seconds.</li>
+    <li><strong>Backup Config:</strong> System → Backup → Save after successful setup.</li>
+    <li><strong>MAC Connection Tip:</strong> Always connect to router using MAC address in Winbox during configuration.</li>
+  </ul>
+</section>
+
+</body>
+</html>

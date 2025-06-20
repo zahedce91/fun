@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>University Routine Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Toast UI Calendar CSS -->
+  <link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css" />
+  <style>
+    .card-body { padding: 0.5rem; }
+    .calendar-container { height: 600px; }
+    .filter-select { margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+<div class="container-fluid mt-3">
+  <div class="row mb-3 align-items-end">
+    <div class="col-lg-9">
+      <div class="row">
+        <div class="col-md-3">
+          <label for="filterDepartment" class="form-label">Department</label>
+          <select id="filterDepartment" class="form-select filter-select">
+            <option value="">All</option><option value="Dept A">Dept A</option><option value="Dept B">Dept B</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="filterProgramme" class="form-label">Programme</label>
+          <select id="filterProgramme" class="form-select filter-select">
+            <option value="">All</option><option value="Undergrad">Undergrad</option><option value="Postgrad">Postgrad</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="filterFaculty" class="form-label">Faculty</label>
+          <select id="filterFaculty" class="form-select filter-select">
+            <option value="">All</option><option value="Faculty X">Faculty X</option><option value="Faculty Y">Faculty Y</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="filterSemester" class="form-label">Semester</label>
+          <select id="filterSemester" class="form-select filter-select">
+            <option value="">All</option><option value="Sem 1">Sem 1</option><option value="Sem 2">Sem 2</option>
+          </select>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-md-3">
+          <label for="filterRoom" class="form-label">Room</label>
+          <select id="filterRoom" class="form-select filter-select">
+            <option value="">All</option><option value="Room 101">Room 101</option><option value="Room 102">Room 102</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="filterIntake" class="form-label">Intake</label>
+          <select id="filterIntake" class="form-select filter-select">
+            <option value="">All</option><option value="2024">2024</option><option value="2025">2025</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="filterSection" class="form-label">Section</label>
+          <select id="filterSection" class="form-select filter-select">
+            <option value="">All</option><option value="A">A</option><option value="B">B</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+		  <label for="filterDay" class="form-label">Day</label>
+		  <select id="filterDay" class="form-select filter-select">
+			<option value="">All</option>
+			<option value="Monday">Monday</option>
+			<option value="Tuesday">Tuesday</option>
+			<option value="Wednesday">Wednesday</option>
+			<option value="Thursday">Thursday</option>
+			<option value="Friday">Friday</option>
+			<option value="Saturday">Saturday</option>
+			<option value="Sunday">Sunday</option>
+		  </select>
+		</div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-md-3">
+          <label for="filterCourse" class="form-label">Course Code</label>
+          <select id="filterCourse" class="form-select filter-select">
+            <option value="">All</option><option value="Course 101">Course 101</option><option value="Course 202">Course 202</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 text-end">
+      <button id="btnAdd" class="btn btn-primary">Add Event</button>
+	  <button id="btnUpdate" class="btn btn-warning ms-2">Update Selected</button>
+	  <button id="btnPrint" class="btn btn-secondary ms-2">Print</button>
+
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-4 mb-3">
+      <div class="card"><div class="card-header">Faculty-wise</div><div class="card-body"><div id="calendarFaculty" class="calendar-container"></div></div></div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card"><div class="card-header">Room-wise</div><div class="card-body"><div id="calendarRoom" class="calendar-container"></div></div></div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card"><div class="card-header">Intake-wise</div><div class="card-body"><div id="calendarIntake" class="calendar-container"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast UI Calendar JS -->
+<script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
+<!-- Bootstrap Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+let allEvents = [
+  // Sample event (time-only format)
+  {
+    id: '1',
+    calendarId: '1',
+    title: 'Math 101',
+    category: 'time',
+    start: '1970-01-01T09:00:00', // Using dummy date
+    end: '1970-01-01T10:30:00',
+    department: 'Dept A',
+    programme: 'Undergrad',
+    faculty: 'Faculty X',
+    semester: 'Sem 1',
+    room: 'Room 101',
+    intake: '2024',
+    section: 'A',
+    day: 'Monday'  
+  },
+  {
+    id: '1',
+    calendarId: '1',
+    title: 'Math 101',
+    category: 'time',
+    start: '1970-01-01T09:00:00',  
+    end: '1970-01-01T10:30:00',
+    department: 'Dept A',
+    programme: 'Undergrad',
+    faculty: 'Faculty X',
+    semester: 'Sem 1',
+    room: 'Room 101',
+    intake: '2024',
+    section: 'B',
+    day: 'Tuesday'  
+  }
+];
+let selectedEvent = null;
+let selectedSlot = null;
+
+const config = {
+  defaultView: 'week',
+  useFormPopup: false,
+  useDetailPopup: false,
+  isReadOnly: true,
+  week: {
+    taskView: false,
+    eventView: ['time'],
+    startDayOfWeek: 1, // Monday
+    dayNames: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    hourStart: 8,
+    hourEnd: 18,
+    narrowWeekend: true,
+    showNowIndicator: false,
+    eventFilter: (event) => {
+      const now = new Date();
+      const dummyDate = new Date(event.start);
+      return dummyDate.getHours() === now.getHours();
+    },
+    scheduleView: ['time'],
+    timezones: [{
+      timezoneOffset: 0,
+      displayLabel: 'GMT+00:00',
+      tooltip: 'UTC'
+    }]
+  },
+  template: {
+    timeGridDisplayPrimaryTime: (time) => {
+      const date = new Date(time);
+      return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    },
+    weekDayName: (model) => model.dayName
+  }
+};
+
+const departmentSlots = {
+  'Dept A': {
+    'Monday': [
+      { start: '08:00', end: '09:30' },
+      { start: '10:00', end: '11:30' },
+      { start: '14:00', end: '15:30' }
+    ],
+    'Tuesday': [
+      { start: '09:00', end: '10:30' },
+      { start: '11:00', end: '12:30' }
+    ]
+  },
+  'Dept B': {
+    'Wednesday': [
+      { start: '08:30', end: '10:00' },
+      { start: '10:30', end: '12:00' }
+    ]
+  }
+};
+
+const calendars = {
+  faculty: new tui.Calendar('#calendarFaculty', config),
+  room: new tui.Calendar('#calendarRoom', config),
+  intake: new tui.Calendar('#calendarIntake', config)
+};
+
+function parseTime(day, timeStr) {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  const date = new Date(`1970-01-0${['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].indexOf(day) + 1}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`);
+  return date;
+}
+
+function updateCalendars() {
+  const filters = {
+    department: document.getElementById('filterDepartment').value,
+    programme: document.getElementById('filterProgramme').value,
+    faculty: document.getElementById('filterFaculty').value,
+    semester: document.getElementById('filterSemester').value,
+    room: document.getElementById('filterRoom').value,
+    intake: document.getElementById('filterIntake').value,
+    section: document.getElementById('filterSection').value,
+    day: document.getElementById('filterDay').value,
+    title: document.getElementById('filterCourse').value
+  };
+
+  const filtered = allEvents.filter(ev => {
+    for (let key in filters) {
+      if (filters[key] && ev[key] !== filters[key]) return false;
+    }
+    return true;
+  });
+
+  Object.values(calendars).forEach(cal => {
+    cal.clear();
+    cal.createEvents(filtered);
+    cal.setDate(new Date('1970-01-01')); // Set to dummy date
+  });
+}
+
+
+
+// Add click handlers for calendar interaction
+Object.values(calendars).forEach(cal => {
+  // Handle slot selection
+  cal.on('clickTimezonesCollapsedBtn', (event) => {
+    const { start, end } = event;
+    selectedSlot = {
+      start: new Date(start),
+      end: new Date(end),
+      day: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][start.getDay()]
+    };
+  });
+
+  // Handle event selection
+  cal.on('clickEvent', (eventObj) => {
+    selectedEvent = allEvents.find(e => e.id === eventObj.event.id);
+    updateFormFields(selectedEvent);
+  });
+
+  // Handle double-click deletion
+  cal.on('dblclick', (event) => {
+    if (event.target.closest('.toastui-calendar-event')) {
+      const eventId = event.target.closest('.toastui-calendar-event').dataset.eventId;
+      allEvents = allEvents.filter(e => e.id !== eventId);
+      updateCalendars();
+    }
+  });
+});
+
+// New function to update form fields
+function updateFormFields(event) {
+  if (!event) return;
+  document.getElementById('filterDepartment').value = event.department;
+  document.getElementById('filterProgramme').value = event.programme;
+  document.getElementById('filterFaculty').value = event.faculty;
+  document.getElementById('filterSemester').value = event.semester;
+  document.getElementById('filterRoom').value = event.room;
+  document.getElementById('filterIntake').value = event.intake;
+  document.getElementById('filterSection').value = event.section;
+  document.getElementById('filterDay').value = event.day;
+  document.getElementById('filterCourse').value = event.title;
+}
+
+// Add event button handler
+document.getElementById('btnAdd').addEventListener('click', () => {
+  if (!selectedSlot) {
+    alert('Please select a time slot first!');
+    return;
+  }
+
+  const department = document.getElementById('filterDepartment').value;
+  const day = selectedSlot.day;
+  
+  // Validate slot
+  const validSlot = departmentSlots[department]?.[day]?.some(slot => {
+    const slotStart = parseTime(day, slot.start);
+    const slotEnd = parseTime(day, slot.end);
+    return selectedSlot.start.getTime() === slotStart.getTime() &&
+           selectedSlot.end.getTime() === slotEnd.getTime();
+  });
+
+  if (!validSlot) {
+    alert('Invalid time slot for selected department/day');
+    return;
+  }
+
+  const newEvent = {
+    id: Date.now().toString(),
+    calendarId: '1',
+    title: document.getElementById('filterCourse').value || 'New Class',
+    category: 'time',
+    start: selectedSlot.start,
+    end: selectedSlot.end,
+    department,
+    programme: document.getElementById('filterProgramme').value,
+    faculty: document.getElementById('filterFaculty').value,
+    semester: document.getElementById('filterSemester').value,
+    room: document.getElementById('filterRoom').value,
+    intake: document.getElementById('filterIntake').value,
+    section: document.getElementById('filterSection').value,
+    day
+  };
+
+  allEvents.push(newEvent);
+  updateCalendars();
+  selectedSlot = null;
+});
+
+// Update event button handler
+document.getElementById('btnUpdate').addEventListener('click', () => {
+  if (!selectedEvent) {
+    alert('Please select an event first!');
+    return;
+  }
+
+  const updatedEvent = {
+    ...selectedEvent,
+    title: document.getElementById('filterCourse').value,
+    department: document.getElementById('filterDepartment').value,
+    programme: document.getElementById('filterProgramme').value,
+    faculty: document.getElementById('filterFaculty').value,
+    semester: document.getElementById('filterSemester').value,
+    room: document.getElementById('filterRoom').value,
+    intake: document.getElementById('filterIntake').value,
+    section: document.getElementById('filterSection').value,
+    day: document.getElementById('filterDay').value
+  };
+
+  allEvents = allEvents.map(e => e.id === selectedEvent.id ? updatedEvent : e);
+  updateCalendars();
+  selectedEvent = null;
+});
+
+// Remove all mode-related code and update initial render
+updateCalendars();
+</script>
+</body>
+</html>
