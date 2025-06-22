@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Slow Typing Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .login-container {
+      max-width: 400px;
+      margin: 100px auto;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container login-container">
+  <div class="card shadow">
+    <div class="card-body">
+      <h4 class="card-title mb-3 text-center">Login</h4>
+      <form id="loginForm">
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" id="username" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" class="form-control" required>
+          <div class="form-text text-danger d-none" id="errorText">Typing too fast! Try again.</div>
+        </div>
+        <button type="submit" id="loginBtn" class="btn btn-primary w-100" disabled>Login</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    let lastKeyTime = 0;
+    let typingValid = true;
+    const threshold = 200; // milliseconds
+
+    $('#password').on('keydown', function () {
+      const currentTime = new Date().getTime();
+      const timeDiff = currentTime - lastKeyTime;
+
+      if (lastKeyTime > 0 && timeDiff < threshold) {
+        typingValid = false;
+        $('#loginBtn').prop('disabled', true);
+        $('#errorText').removeClass('d-none');
+      } else {
+        typingValid = true;
+        $('#errorText').addClass('d-none');
+        $('#loginBtn').prop('disabled', false);
+      }
+
+      lastKeyTime = currentTime;
+    });
+
+    $('#loginForm').on('submit', function (e) {
+      e.preventDefault();
+      if (typingValid) {
+        alert('Proceeding with authentication...');
+        // Add your authentication logic here
+      } else {
+        alert('Invalid typing speed.');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
