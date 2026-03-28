@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Token Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <style>
+    /* keep previous styling, with necessary additions for bg-layer and print modes */
+    body {
+      background: #f8f9fa;
+    }
+
+    .no-print {
+      margin-bottom: 20px;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        background: white;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .page {
+        page-break-after: always;
+        display: grid;
+        width: 210mm;
+        height: 297mm;
+        padding: 10mm;
+        box-sizing: border-box;
+      }
+
+      .grid-overlay {
+        display: none !important;
+      }
+
+      /* print-optimized tweaks for modes are controlled by JS adding classes on container tokens */
+    }
+
+    /* page & token layout */
+    .page {
+      display: grid;
+      gap: 10px;
+      padding: 10px;
+      border: 1px dashed #ddd;
+      background: white;
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    .token {
+      border: 1px solid #999;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      position: relative;
+      overflow: hidden;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* background image layer (absolute) - allows image-only opacity and blend modes */
+    .token .bg-image-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+      pointer-events: none;
+    }
+
+    /* keep content above bg layer */
+    .token>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    .token-title {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .token-subtitle {
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .token-number {
+      font-size: 22px;
+      margin: 6px 0;
+      font-weight: 600;
+    }
+
+    .double-wrapper {
+      display: flex;
+      position: relative;
+      height: 100%;
+    }
+
+    .double-side {
+      flex: 1;
+      padding: 10px;
+      position: relative;
+      border-left: 1px dashed #bbb;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .double-side:first-child {
+      border-left: none;
+    }
+
+    .cut-line {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      border-left: 1px dashed #999;
+    }
+
+    /* QR positioning containers (flow based) */
+    .qr-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 5px;
+    }
+
+    .qr-top {
+      order: -1;
+      margin-bottom: 5px;
+    }
+
+    .qr-bottom {
+      order: 10;
+      margin-top: 5px;
+    }
+
+    .qr-left {
+      flex-direction: row;
+      justify-content: flex-start;
+    }
+
+    .qr-right {
+      flex-direction: row;
+      justify-content: flex-end;
+    }
+
+    /* Grid overlay visuals (toggle) */
+    .grid-overlay.active .page {
+      outline: 2px dashed rgba(0, 0, 0, 0.3);
+    }
+
+    .grid-overlay.active .token {
+      outline: 1px dotted rgba(255, 0, 0, 0.4);
+    }
+
+    .grid-overlay.active .token::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 90%;
+      height: 90%;
+      border: 1px dashed rgba(0, 0, 255, 0.3);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    /* Print optimization classes applied by JS:
+   - .printA: remove image/effects
+   - .printB: keep image via bg-layer with reduced opacity; remove shadows
+   - .printC: remove shadows only
+*/
+    .token.printA {
+      box-shadow: none !important;
+      background-image: none !important;
+    }
+
+    .token.printA .bg-image-layer {
+      display: none !important;
+    }
+
+    .token.printB {
+      box-shadow: none !important;
+    }
+
+    .token.printB .bg-image-layer {
+      opacity: 0.45;
+      /* lower image opacity for faster print but keep visual */
+      filter: none !important;
+    }
+
+    .token.printC {
+      box-shadow: none !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container no-print">
+    <h3 class="text-center mb-3">🎟 Token Generator 🎟</h3>
+
+    <div class="card p-3 mb-4">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Program Title</label>
+          <input type="text" id="title" class="form-control" placeholder="<i>Annual Function 2025</i>">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Program Subtitle</label>
+          <input type="text" id="subtitle" class="form-control" placeholder="<b>Cultural & Prize Distribution</b>">
+        </div>
+        <div class="col-md-4" id="subtle2" style="display:none;">
+          <label class="form-label">Program 2nd Part Subtitle</label>
+          <input type="text" id="subtitle2" class="form-control" placeholder="<b>Food Distribution</b>">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">From</label>
+          <input type="number" id="from" class="form-control" min="1" placeholder="Start">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">To</label>
+          <input type="number" id="to" class="form-control" min="1" placeholder="End">
+        </div>
+      </div>
+
+      <hr>
+
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Rows per Page</label>
+          <input type="number" id="rows" class="form-control" value="5" min="1">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Columns per Page</label>
+          <input type="number" id="cols" class="form-control" value="2" min="1">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Token Background Color</label>
+          <input type="color" id="bgColor" class="form-control form-control-color" value="#ffffff">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Background Image</label>
+          <input type="file" id="bgImage" class="form-control" accept="image/*">
+        </div>
+      </div>
+
+      <div class="row g-3 mt-2">
+        <div class="col-md-3">
+          <label class="form-label">Image Size (%)</label>
+          <input type="number" id="imgSize" class="form-control" value="100" min="10" max="200">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Image Position</label>
+          <select id="imgPosition" class="form-select">
+            <option value="center">Center</option>
+            <option value="top">Top</option>
+            <option value="bottom">Bottom</option>
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+            <option value="top right">Top Right</option>
+            <option value="bottom right">Bottom Right</option>
+            <option value="top left">Top Left</option>
+            <option value="bottom left">Bottom Left</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">QR Size (px)</label>
+          <input type="number" id="qrSize" class="form-control" value="70" min="40" max="200">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">QR Position</label>
+          <select id="qrPosition" class="form-select">
+            <option value="bottom">Bottom</option>
+            <option value="top">Top</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-2">
+        <div class="col-md-3">
+          <label class="form-label">Copy Type</label>
+          <select id="copyType" class="form-select" onchange="toggleSub2()">
+            <option value="single">Single</option>
+            <option value="double">Double (Cut Line)</option>
+            <option value="double2">Double Separated (Cut Line)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Advanced Settings (collapsible) -->
+      <div class="mt-3">
+        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse"
+          data-bs-target="#advancedSettings" aria-expanded="false" aria-controls="advancedSettings">
+          ⚙️ Advanced Settings
+        </button>
+
+        <div class="collapse mt-3" id="advancedSettings">
+          <div class="card card-body">
+            <div class="row g-3">
+
+              <div class="col-md-4">
+                <label class="form-label">Background Blend Mode</label>
+                <select id="blendMode" class="form-select">
+                  <option value="normal">Normal</option>
+                  <option value="multiply">Multiply</option>
+                  <option value="overlay">Overlay</option>
+                  <option value="screen">Screen</option>
+                  <option value="darken">Darken</option>
+                  <option value="lighten">Lighten</option>
+                  <option value="soft-light">Soft-light</option>
+                  <option value="hard-light">Hard-light</option>
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Token Prefix</label>
+                <input type="text" id="tokenPrefix" class="form-control" value="Token #" placeholder="Token #">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Print Optimization Mode</label>
+                <select id="printMode" class="form-select">
+                  <option value="none">None (Default)</option>
+                  <option value="A">A — Clean Print (No image, no effects)</option>
+                  <option value="B">B — Keep Image (low opacity, no shadows)</option>
+                  <option value="C">C — Mild Optimization (remove shadows only)</option>
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Title Color</label>
+                <input type="color" id="titleColor" class="form-control form-control-color" value="#000000">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Subtitle Color</label>
+                <input type="color" id="subtitleColor" class="form-control form-control-color" value="#333333">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Token Number Color</label>
+                <input type="color" id="numberColor" class="form-control form-control-color" value="#000000">
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        
+        <div class="col-md-3 text-end" hidden>
+          <button id="toggleGrid" class="btn btn-outline-secondary "> 🔲 Toggle Grid </button>
+        </div>
+        <div class="col-md-9 text-end">
+          <button class="btn btn-primary" onclick="generateTokens()">Generate Tokens</button>
+        </div>
+
+        <div class="col-md-3 text-end">
+          <button class="btn btn-success" onclick="window.print()">🖨 Print Tokens</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="output"></div>
+
+  <!-- Link to external JS produced in Part 3 -->
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+
+    let uploadedImage = null;
+
+    document.getElementById('bgImage').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => uploadedImage = ev.target.result;
+      reader.readAsDataURL(file);
+    });
+
+    // grid toggle (kept but hidden UI in markup)
+    const toggleGridBtn = document.getElementById('toggleGrid');
+    if (toggleGridBtn) {
+      toggleGridBtn.addEventListener('click', () => {
+        document.body.classList.toggle('grid-overlay');
+      });
+    }
+
+    function removeEmojis(str) {
+      // remove pictographic emojis to keep QR text short
+      return str.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim();
+    }
+
+    function createQRContainer(position, qrSize, text, idSuffix) {
+      const container = document.createElement("div");
+      container.className = `qr-container qr-${position}`;
+      const qrDiv = document.createElement("div");
+      // use an inner wrapper for QR content to avoid id collisions
+      const qrInnerId = `qr-${idSuffix}`;
+      qrDiv.id = qrInnerId;
+      container.appendChild(qrDiv);
+
+      // Use low correction level and SVG rendering for better print performance
+      try {
+        new QRCode(qrDiv, {
+          text: text,
+          width: qrSize,
+          height: qrSize,
+          correctLevel: QRCode.CorrectLevel.L,
+          //useSVG: true
+        });
+      } catch (err) {
+        // fallback: try without useSVG if library version doesn't support it
+        try {
+          new QRCode(qrDiv, { text: text, width: qrSize, height: qrSize, correctLevel: QRCode.CorrectLevel.L });
+        } catch (e) {
+          console.error("QR generation failed:", e);
+        }
+      }
+
+      return container;
+    }
+
+    function createTokenSide(title, subtitle, num, qrSize, qrPosition, colors, prefix, blendMode, imgOpts, printMode) {
+      const side = document.createElement("div");
+      side.className = "double-side";
+
+      // Prepare clean text for QR (strip HTML tags and emojis)
+      const plainTitle = title ? title.replace(/<[^>]*>/g, "") : "";
+      const plainSub = subtitle ? subtitle.replace(/<[^>]*>/g, "") : "";
+      const cleanText = removeEmojis(`${plainTitle} ${plainSub} ${prefix} ${num}`.trim());
+
+      const qr = createQRContainer(qrPosition, qrSize, cleanText, `${num}-${Math.random().toString(36).substr(2, 5)}`);
+
+      // Title element (allow HTML rendering)
+      const titleEl = document.createElement("div");
+      titleEl.className = "token-title";
+      titleEl.innerHTML = title || "";
+      if (colors.titleColor) titleEl.style.color = colors.titleColor;
+
+      // Subtitle element
+      const subEl = document.createElement("div");
+      subEl.className = "token-subtitle";
+      subEl.innerHTML = subtitle || "";
+      if (colors.subtitleColor) subEl.style.color = colors.subtitleColor;
+
+      // Number element
+      const numEl = document.createElement("div");
+      numEl.className = "token-number";
+      numEl.textContent = `${prefix} ${num}`;
+      if (colors.numberColor) numEl.style.color = colors.numberColor;
+
+      // Position QR in flow (top/bottom). Keep left/right removed per current UI.
+      if (qrPosition === "top") side.appendChild(qr);
+      side.appendChild(titleEl);
+      if (subtitle) side.appendChild(subEl);
+      side.appendChild(numEl);
+      if (qrPosition === "bottom") side.appendChild(qr);
+
+      // if qrPosition left/right (not in current UI), you could implement row layout here
+
+      return side;
+    }
+
+    function generateTokens() {
+      const title = document.getElementById('title').value.trim();
+      const subtitle = document.getElementById('subtitle').value.trim();
+      const subtitle2 = document.getElementById('subtitle2').value.trim();
+      const from = parseInt(document.getElementById('from').value);
+      const to = parseInt(document.getElementById('to').value);
+      const rows = parseInt(document.getElementById('rows').value);
+      const cols = parseInt(document.getElementById('cols').value);
+      const bgColor = document.getElementById('bgColor').value;
+      const imgSize = document.getElementById('imgSize').value;
+      const imgPosition = document.getElementById('imgPosition').value;
+      const qrSize = parseInt(document.getElementById('qrSize').value);
+      const qrPosition = document.getElementById('qrPosition').value;
+      const copyType = document.getElementById('copyType').value;
+      const output = document.getElementById('output');
+      output.innerHTML = "";
+
+      // advanced settings
+      const blendMode = document.getElementById('blendMode').value || 'normal';
+      const prefixInput = document.getElementById('tokenPrefix').value || 'Token #';
+      const printMode = document.getElementById('printMode').value || 'none';
+      const titleColor = document.getElementById('titleColor').value;
+      const subtitleColor = document.getElementById('subtitleColor').value;
+      const numberColor = document.getElementById('numberColor').value;
+
+      const colors = { titleColor, subtitleColor, numberColor };
+
+      if (!title || isNaN(from) || isNaN(to) || from > to || rows < 1 || cols < 1) {
+        alert("Please fill all fields correctly!");
+        return;
+      }
+
+      const perPage = rows * cols;
+
+      for (let i = from; i <= to; i += perPage) {
+        const page = document.createElement("div");
+        page.className = "page";
+        page.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        page.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+        output.appendChild(page);
+
+        for (let j = i; j < i + perPage && j <= to; j++) {
+          const token = document.createElement("div");
+          token.className = "token";
+          token.style.backgroundColor = bgColor;
+
+          // Remove any previous print mode classes (defensive)
+          token.classList.remove('printA', 'printB', 'printC');
+
+          // Prepare and attach background image layer if an image is uploaded and mode allows it
+          if (uploadedImage && printMode !== 'A') {
+            // create bg layer so image can have separate opacity & blend without affecting content
+            const bgLayer = document.createElement('div');
+            bgLayer.className = 'bg-image-layer';
+            bgLayer.style.backgroundImage = `url('${uploadedImage}')`;
+            // convert imgPosition to CSS background-position (simple mapping)
+            bgLayer.style.backgroundPosition = imgPosition;
+            bgLayer.style.backgroundSize = `${imgSize}%`;
+            // apply selected blend mode
+            bgLayer.style.backgroundBlendMode = blendMode === 'normal' ? 'normal' : blendMode;
+            // default opacity
+            bgLayer.style.opacity = '1';
+
+            // If user selected Print Mode B, reduce image opacity for faster print
+            if (printMode === 'B') {
+              token.classList.add('printB');
+              bgLayer.style.opacity = '0.45';
+            } else if (printMode === 'C') {
+              token.classList.add('printC');
+            }
+
+            // Append bgLayer BEFORE content, so content remains readable (z-index handled in CSS)
+            token.appendChild(bgLayer);
+          } else {
+            // If no image or printMode A: do nothing (image suppressed in A)
+            if (printMode === 'A') {
+              token.classList.add('printA'); // class hides image and effects via CSS
+            }
+          }
+
+          // If user requested blend mode applied to background-color + image combination,
+          // it is already set on bgLayer. If there is no bgLayer but blendMode != normal,
+          // we can set token.style.backgroundBlendMode for future compatibility.
+          if (!uploadedImage && blendMode !== 'normal') {
+            token.style.backgroundBlendMode = blendMode;
+          }
+
+          // If Print Mode A: ensure heavy visual effects are suppressed (shadow, bg-layer hidden)
+          if (printMode === 'A') {
+            token.style.boxShadow = 'none';
+          } else if (printMode === 'B' || printMode === 'C') {
+            // remove shadow to speed printing a bit
+            token.style.boxShadow = 'none';
+          }
+
+          // Build content (single or double)
+          if (copyType === "double") {
+            const wrap = document.createElement("div");
+            wrap.className = "double-wrapper";
+            wrap.innerHTML = `<div class="cut-line"></div>`;
+            wrap.appendChild(createTokenSide(title, subtitle, j, qrSize, qrPosition, colors, prefixInput, blendMode, { imgSize, imgPosition }, printMode));
+            wrap.appendChild(createTokenSide(title, subtitle, j, qrSize, qrPosition, colors, prefixInput, blendMode, { imgSize, imgPosition }, printMode));
+            token.appendChild(wrap);
+          } else if (copyType === "double2") {
+            const wrap = document.createElement("div");
+            wrap.className = "double-wrapper";
+            wrap.innerHTML = `<div class="cut-line"></div>`;
+            wrap.appendChild(createTokenSide(title, subtitle, j, qrSize, qrPosition, colors, prefixInput, blendMode, { imgSize, imgPosition }, printMode));
+            wrap.appendChild(createTokenSide(title, subtitle2, j, qrSize, qrPosition, colors, prefixInput, blendMode, { imgSize, imgPosition }, printMode));
+            token.appendChild(wrap);
+          } else {
+            token.appendChild(createTokenSide(title, subtitle, j, qrSize, qrPosition, colors, prefixInput, blendMode, { imgSize, imgPosition }, printMode));
+          }
+
+          page.appendChild(token);
+        }
+      }
+    }
+  
+    function toggleSub2() {
+      const copyType = document.getElementById('copyType').value;
+      const el = document.getElementById('subtle2');
+
+      if (copyType === "double2") {
+        el.style.display = "block";
+      } else {
+        el.style.display = "none";
+      }
+    }
+  </script>
+</body>
+
+</html>

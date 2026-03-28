@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Random Selector with Counter</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container my-4">
+  <h2 class="text-center mb-4">Random Option Selector</h2>
+
+  <!-- Editable list -->
+  <div class="card mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Options List</span>
+      <button id="reloadList" class="btn btn-sm btn-secondary">Reload from Storage</button>
+    </div>
+    <div class="card-body">
+      <textarea id="optionsInput" class="form-control mb-2" rows="4" placeholder="Enter options, one per line"></textarea>
+      <button id="saveList" class="btn btn-primary">Save List</button>
+    </div>
+  </div>
+
+  <!-- Random selection -->
+  <div class="card mb-3">
+    <div class="card-header">Random Selection</div>
+    <div class="card-body text-center">
+      <h4 id="selectedOption" class="mb-3 text-success"></h4>
+      <button id="pickRandom" class="btn btn-success">Pick Random</button>
+    </div>
+  </div>
+
+  <!-- Counts table -->
+  <div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+      <span>Selection Counts (Max Limit Included)</span>
+      <span class="fw-bold">Total: <span id="totalCount">0</span></span>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-striped mb-0" id="countsTable">
+        <thead>
+          <tr>
+            <th>Option</th>
+            <th>Count</th>
+            <th>Max Limit</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Reset button -->
+  <div class="text-center">
+    <button id="resetData" class="btn btn-danger">Reset All</button>
+  </div>
+</div>
+
+<script>
+  const optionsInput = document.getElementById('optionsInput');
+  const saveListBtn = document.getElementById('saveList');
+  const reloadListBtn = document.getElementById('reloadList');
+  const pickRandomBtn = document.getElementById('pickRandom');
+  const selectedOptionEl = document.getElementById('selectedOption');
+  const countsTableBody = document.querySelector('#countsTable tbody');
+  const totalCountEl = document.getElementById('totalCount');
+  const resetBtn = document.getElementById('resetData');
+
+  let options = [];
+  let counts = {};
+  let maxLimits = {};
+
+  // Load data from localStorage
+  function loadData() {
+    options = JSON.parse(localStorage.getItem('optionsList')) || [];
+    counts = JSON.parse(localStorage.getItem('countsData')) || {};
+    maxLimits = JSON.parse(localStorage.getItem('maxLimitsData')) || {};
+    optionsInput.value = options.join("\n");
+
+    // Ensure all options have a max limit (default = Infinity)
+    options.forEach(opt => {
+      if (!maxLimits[opt]) maxLimits[opt] = Infinity;
+    });
+
+    renderTable();
+  }
+
+  // Save list to localStorage
+  saveListBtn.addEventListener('click', () => {
+    options = optionsInput.value.split("\n").map(o => o.trim()).filter(o => o);
+    localStorage.setItem('optionsList', JSON.stringify(options));
+
+    // Ensure counts & limits exist for all options
+    options.forEach(opt => {
+      if (!counts[opt]) counts[opt] = 0;
+      if (!maxLimits[opt]) maxLimits[opt] = Infinity;
+    });
+
+    localStorage.setItem('countsData', JSON.stringify(counts));
+    localStorage.setItem('maxLimitsData', JSON.stringify(maxLimits));
+    renderTable();
+  });
+
+  // Reload list from storage without resetting counts
+  reloadListBtn.addEventListener('click', () => {
+    options = JSON.parse(localStorage.getItem('optionsList')) || [];
+    optionsInput.value = options.join("\n");
+    renderTable();
+  });
+
+  // Render counts table & total
+  function renderTable() {
+    countsTableBody.innerHTML = '';
+    let total = 0;
+    options.forEach(opt => {
+      const count = counts[opt] || 0;
+      total += count;
+      const maxVal = maxLimits[opt] === Infinity ? '' : maxLimits[opt];
+      const row = `
+        <tr>
+          <td>${opt}</td>
+          <td>${count}</td>
+          <td><input type="number" class="form-control form-control-sm max-limit-input" data-option="${opt}" value="${maxVal}" min="1" placeholder="∞"></td>
+        </tr>`;
+      countsTableBody.insertAdjacentHTML('beforeend', row);
+    });
+    totalCountEl.textContent = total;
+
+    // Attach listeners to max limit inputs
+    document.querySelectorAll('.max-limit-input').forEach(input => {
+      input.addEventListener('change', () => {
+        const opt = input.dataset.option;
+        const val = parseInt(input.value);
+        maxLimits[opt] = isNaN(val) ? Infinity : val;
+        localStorage.setItem('maxLimitsData', JSON.stringify(maxLimits));
+      });
+    });
+  }
+
+  // Pick random option respecting max limits
+  pickRandomBtn.addEventListener('click', () => {
+    const availableOptions = options.filter(opt => (counts[opt] || 0) < (maxLimits[opt] || Infinity));
+
+    if (availableOptions.length === 0) {
+      alert('No options available to pick. All have reached their max limits.');
+      return;
+    }
+
+    const randomOption = availableOptions[Math.floor(Math.random() * availableOptions.length)];
+    selectedOptionEl.textContent = randomOption;
+    counts[randomOption] = (counts[randomOption] || 0) + 1;
+    localStorage.setItem('countsData', JSON.stringify(counts));
+    renderTable();
+  });
+
+  // Reset all data
+  resetBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to reset all data?')) {
+      localStorage.removeItem('optionsList');
+      localStorage.removeItem('countsData');
+      localStorage.removeItem('maxLimitsData');
+      options = [];
+      counts = {};
+      maxLimits = {};
+      optionsInput.value = '';
+      selectedOptionEl.textContent = '';
+      renderTable();
+    }
+  });
+
+  // Initialize
+  loadData();
+</script>
+
+</body>
+</html>

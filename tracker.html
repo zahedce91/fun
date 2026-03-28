@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Live Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 400px; }
+  </style>
+</head>
+<body class="bg-light">
+<div class="container py-4">
+  <h1 class="text-center">📍 Multi-User Live Tracker</h1>
+
+  <!-- Login Section -->
+  <div id="loginSection" class="card p-3">
+    <input id="username" class="form-control mb-2" placeholder="Enter username">
+    <select id="role" class="form-control mb-2">
+      <option value="user">Normal User</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button id="loginBtn" class="btn btn-primary w-100">Login</button>
+  </div>
+
+  <!-- Tracker Section -->
+  <div id="trackerSection" class="d-none">
+    <div class="row">
+      <div class="col-md-4">
+        <h5>Users:</h5>
+        <ul id="userList" class="list-group"></ul>
+      </div>
+      <div class="col-md-8">
+        <div id="map"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs in compat mode -->
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
+
+<!-- Leaflet -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+/* 1. Your Firebase Config (from Step 2) */
+const firebaseConfig = {
+  apiKey: "AIzaSyBR8Gd-gMwv9XK_eeYSilpAbzm_7DxmwfA",
+  authDomain: "live-tracker-d7bd2.firebaseapp.com",
+  projectId: "live-tracker-d7bd2",
+  storageBucket: "live-tracker-d7bd2.firebasestorage.app",
+  messagingSenderId: "579899080981",
+  appId: "1:579899080981:web:3af02e74c1b539f7f7691c",
+  measurementId: "G-CN3N8ETNR6"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let myUser, myRole, map, marker;
+let selectedUser = null;
+let userMarkers = {};
+
+document.getElementById('loginBtn').addEventListener('click', () => {
+  myUser = document.getElementById('username').value.trim();
+  myRole = document.getElementById('role').value;
+  if (!myUser) return alert("Enter a username");
+
+  document.getElementById('loginSection').classList.add('d-none');
+  document.getElementById('trackerSection').classList.remove('d-none');
+
+  map = L.map('map').setView([0,0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+  if (myRole === 'user') {
+    navigator.geolocation.watchPosition(pos => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+      db.ref('locations/' + myUser).set({
+        lat, lon, role: myRole, timestamp: Date.now()
+      });
+    }, err => console.error(err), { enableHighAccuracy: true });
+  }
+
+  db.ref('locations').on('value', snapshot => {
+    const users = snapshot.val() || {};
+    updateUserList(users);
+    updateMap(users);
+  });
+});
+
+function updateUserList(users) {
+  const listEl = document.getElementById('userList');
+  listEl.innerHTML = '';
+  Object.keys(users).forEach(u => {
+    const li = document.createElement('li');
+    li.className = 'list-group-item';
+    li.textContent = `${u} (${users[u].role})`;
+    if (myRole === 'admin' && u !== myUser) {
+      li.style.cursor = 'pointer';
+      li.onclick = () => { selectedUser = u; updateMap(users); };
+    }
+    listEl.appendChild(li);
+  });
+}
+
+function updateMap(users) {
+  if (myRole === 'admin' && selectedUser && users[selectedUser]) {
+    const { lat, lon } = users[selectedUser];
+    if (lat && lon) {
+      if (!marker) marker = L.marker([lat, lon]).addTo(map);
+      else marker.setLatLng([lat, lon]);
+      map.setView([lat, lon], 15);
+    }
+  } else if (myRole === 'user' && users[myUser]) {
+    const { lat, lon } = users[myUser];
+    if (lat && lon) {
+      if (!marker) marker = L.marker([lat, lon]).addTo(map);
+      else marker.setLatLng([lat, lon]);
+      map.setView([lat, lon], 15);
+    }
+  }
+}
+</script>
+</body>
+</html>

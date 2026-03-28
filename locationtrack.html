@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live Location Tracker</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+<div class="container py-5">
+  <h1 class="text-center mb-4">📍 Live Location Tracker</h1>
+  
+  <div class="card shadow-sm p-4">
+    <div class="mb-3">
+      <button id="startBtn" class="btn btn-primary w-100">Start Tracking</button>
+    </div>
+    <p><strong>Latitude:</strong> <span id="lat">-</span></p>
+    <p><strong>Longitude:</strong> <span id="lon">-</span></p>
+    <p><strong>Accuracy:</strong> <span id="accuracy">-</span> meters</p>
+    <div id="map"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+let map, marker, watchId;
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  if (!navigator.geolocation) {
+    alert('Geolocation is not supported by your browser');
+    return;
+  }
+  
+  if (watchId) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+    document.getElementById('startBtn').textContent = "Start Tracking";
+    return;
+  }
+
+  document.getElementById('startBtn').textContent = "Stop Tracking";
+
+  map = L.map('map').setView([0, 0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  watchId = navigator.geolocation.watchPosition(success, error, {
+    enableHighAccuracy: true,
+    maximumAge: 0
+  });
+});
+
+function success(position) {
+  const lat = position.coords.latitude;
+  const lon = position.coords.longitude;
+  const accuracy = position.coords.accuracy;
+
+  document.getElementById('lat').textContent = lat.toFixed(6);
+  document.getElementById('lon').textContent = lon.toFixed(6);
+  document.getElementById('accuracy').textContent = accuracy.toFixed(2);
+
+  if (!marker) {
+    marker = L.marker([lat, lon]).addTo(map);
+  } else {
+    marker.setLatLng([lat, lon]);
+  }
+  
+  map.setView([lat, lon], 16);
+}
+
+function error(err) {
+  console.error(err);
+  alert('Unable to retrieve your location');
+}
+</script>
+</body>
+</html>

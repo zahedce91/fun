@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f8f9fa;
+        }
+
+        /* TOKEN ROW */
+        .token-row {
+            width: 100%;
+            height: 56mm;
+            /* A4 297mm / 5 rows ≈ 59mm (keeping safe margin) */
+            border: 1px dashed #635f5f;
+            display: flex;
+            page-break-inside: avoid;
+        }
+
+        /* LEFT SIDE */
+        .token-left {
+            width: 50%;
+            padding: 15px;
+            border-right: 2px dashed #5c5a5a;
+        }
+
+        /* RIGHT SIDE */
+        .token-right {
+            width: 50%;
+            padding: 15px;
+        }
+
+        /* SCREEN CONTROLS */
+        .no-print {
+            display: block;
+        }
+
+        /* PRINT SETTINGS */
+        @media print {
+
+            @page {
+                size: A4;
+                margin: 0;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                background: #fff;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            .token-row {
+                height: 59.4mm;
+                /* Exact 5 rows in A4 */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container mt-4 no-print bg-info">
+        <h4>Token Generator</h4>
+
+        <div class="row g-2">
+            <div class="col-md-12">
+                <input type="test" id="head" name="head" class="form-control" placeholder="Headings">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <textarea id="names" class="form-control" rows="6"
+                placeholder="Enter Names or Codes (One per line)"></textarea>
+        </div>
+
+        <div class="row g-2">
+            <div class="col-md-4">
+                <input type="number" id="qty" name="qty" class="form-control" placeholder="Tokens per Name">
+            </div>
+            <div class="col-md-4">
+                <input type="number" id="start" name="start" class="form-control" placeholder="Start Number">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" onclick="generateTokens()">Generate</button>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-success w-100" onclick="window.print()">Print</button>
+            </div>
+        </div>
+        <hr>
+    </div>
+
+    <div id="tokenArea" style="width:210mm; min-height:297mm; background:#ffffff;">
+        Generated Tokens Here
+    </div>
+
+
+    <script>
+
+        let counter = 1;
+
+        function generateTokens() {
+
+            let head = document.getElementById("head").value;
+            let names = document.getElementById("names").value.trim().split('\n');
+            let qty = parseInt(document.getElementById("qty").value);
+            counter = parseInt(document.getElementById("start").value) || counter;
+            let tokenArea = document.getElementById("tokenArea");
+
+            if (!head || !names || !qty) {
+                alert("Enter Headings, Names & Quantity");
+                return;
+            }
+
+            tokenArea.innerHTML = "";
+
+            names.forEach(name => {
+
+                for (let i = 0; i < qty; i++) {
+
+                    let tokenID = "N" + (counter++).toString().padStart(4, '0');
+
+                    let tokenHTML = `
+                        <div class="token-row">
+                            <div class="token-left">
+                                
+                                <p class="mb-0"> Self Copy : <strong> Token ID: ${tokenID}  </strong> </p>
+                                <h6><i> ${head}  </i></h6> <br> <br>
+                                <h3> ${name.trim()} </h3> 
+               
+                            </div>
+
+                            <div class="token-right">
+                                <p class="mb-0"> Submission Copy : <strong> Token ID: ${tokenID}  </strong> </p>
+                                <h6><i> ${head}  </i></h6>
+                               
+                                <h4> ${name.trim()} </h4> <br>
+
+                                Receiver Name: ________________________ <br> 
+                                ID: __________________________  Sign: ____________
+                            </div>
+
+                        </div>
+                    `;
+
+                    tokenArea.innerHTML += tokenHTML;
+                }
+            });
+
+            //document.getElementById("names").value="";
+            //document.getElementById("qty").value="";
+            document.getElementById("start").value = counter;
+        }
+
+    </script>
+
+</body>
+
+</html>

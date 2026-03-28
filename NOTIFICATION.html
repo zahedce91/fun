@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Notification Repeater</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding: 24px; background:#f7fafc; color:#0f172a; }
+  .card { background: white; border-radius: 10px; box-shadow: 0 6px 18px rgba(10,20,40,0.06); padding: 18px; max-width:520px; margin: 24px auto; }
+  label { display:block; margin-top:12px; font-weight:600; }
+  input[type="number"] { width:100%; padding:8px 10px; margin-top:6px; border-radius:6px; border:1px solid #e2e8f0; }
+  .controls { display:flex; gap:8px; margin-top:14px; }
+  button { padding:10px 14px; border-radius:8px; border: none; cursor:pointer; font-weight:600; }
+  .btn-start { background: #10b981; color:white; }
+  .btn-stop { background: #ef4444; color:white; }
+  .status { margin-top:16px; background:#f1f5f9; padding:10px;border-radius:6px; color:#0f172a; }
+  small { color:#64748b; }
+  .countdown { font-size:1.6rem; font-weight:700; margin-top:8px; }
+  .footer { margin-top:12px; font-size:0.9rem; color:#475569; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Notification Repeater</h2>
+    <p>Send a browser notification every <strong>n</strong> minutes for a defined number of repetitions.</p>
+
+    <label>Interval (minutes)
+      <input id="minutes" type="number" min="0" step="0.1" value="0.1" />
+      <small>Enter minutes between notifications (use decimals for testing, e.g., 0.1 = 6 seconds).</small>
+    </label>
+
+    <label>Number of repetitions
+      <input id="reps" type="number" min="1" step="1" value="5" />
+    </label>
+
+    <label>Notification title
+      <input id="title" type="text" value="Reminder" />
+    </label>
+
+    <label>Notification message
+      <input id="message" type="text" value="Time is up — take action!" />
+    </label>
+
+    <div class="controls">
+      <button id="startBtn" class="btn-start">Start</button>
+      <button id="stopBtn" class="btn-stop" disabled>Stop</button>
+    </div>
+
+    <div class="status" id="status">
+      <div>Permission: <span id="perm">unknown</span></div>
+      <div class="countdown" id="countdown">Idle</div>
+      <div>Remaining notifications: <span id="remaining">0</span></div>
+    </div>
+
+    <div class="footer">
+      <p><small>Note: Browser must be allowed to show notifications. On some browsers you may need to keep the tab open. For quick testing use a small interval like 0.1 minutes (~6 seconds).</small></p>
+    </div>
+  </div>
+
+<script>
+(function(){
+  // UI elements
+  const minutesInput = document.getElementById('minutes');
+  const repsInput = document.getElementById('reps');
+  const titleInput = document.getElementById('title');
+  const messageInput = document.getElementById('message');
+
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+
+  const permSpan = document.getElementById('perm');
+  const countdownEl = document.getElementById('countdown');
+  const remainingEl = document.getElementById('remaining');
+
+  let timerId = null;      // interval for countdown display
+  let notifyTimeout = null;// actual next notification timeout
+  let remaining = 0;
+  let nextNotifyAt = 0;    // timestamp
+  let intervalMs = 0;
+
+  // update notification permission status
+  function updatePermissionLabel() {
+    const p = (typeof Notification !== 'undefined') ? Notification.permission : 'unsupported';
+    permSpan.textContent = p;
+  }
+  updatePermissionLabel();
+
+  // request permission if needed
+  async function ensurePermission() {
+    if (typeof Notification === 'undefined') return false;
+    if (Notification.permission === 'granted') return true;
+    if (Notification.permission === 'denied') return false;
+    try {
+      const res = await Notification.requestPermission();
+      updatePermissionLabel();
+      return res === 'granted';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // show notification (or fallback)
+  function showNotification(title, body) {
+    // try native Notifications
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      try {
+        const n = new Notification(title, { body, renotify: true });
+        // optional: play a beep
+        playBeep();
+        // close after 6 seconds
+        setTimeout(()=> n.close(), 6000);
+      } catch (e) {
+        alert(`${title}\n\n${body}`);
+      }
+    } else {
+      alert(`${title}\n\n${body}`);
+    }
+  }
+
+  // small beep using WebAudio
+  function playBeep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = 880;
+      g.gain.value = 0.05;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      setTimeout(()=>{ o.stop(); ctx.close(); }, 140);
+    } catch(e) {
+      // ignore
+    }
+  }
+
+  // start the repeating notifications
+  async function startNotifications() {
+    // parse inputs
+    const minutes = parseFloat(minutesInput.value);
+    const reps = parseInt(repsInput.value, 10);
+    const title = titleInput.value || 'Reminder';
+    const message = messageInput.value || '';
+
+    if (!isFinite(minutes) || minutes < 0) { alert('Enter a valid interval in minutes (>= 0).'); return; }
+    if (!isFinite(reps) || reps < 1) { alert('Enter a valid number of repetitions (>= 1).'); return; }
+
+    // request permission (if available)
+    const haveNotif = (typeof Notification !== 'undefined');
+    if (haveNotif) {
+      const ok = await ensurePermission();
+      if (!ok && Notification.permission !== 'granted') {
+        const proceed = confirm('Notifications are blocked/denied. Continue using alert() fallback?');
+        if (!proceed) return;
+      }
+    }
+
+    // compute ms interval (minutes to ms)
+    intervalMs = Math.max(0, minutes) * 60 * 1000;
+
+    // initialize counters
+    remaining = reps;
+    remainingEl.textContent = remaining;
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+
+    // schedule first notification:
+    // if intervalMs === 0 -> send immediately and count as one repetition
+    if (intervalMs === 0) {
+      // immediate send and schedule next if remaining > 0
+      triggerOne();
+      if (remaining > 0) scheduleNext(intervalMs);
+    } else {
+      // schedule first after intervalMs
+      nextNotifyAt = Date.now() + intervalMs;
+      scheduleNext(intervalMs);
+    }
+
+    // start countdown updater
+    startCountdownTimer();
+  }
+
+  // schedule the next notification using setTimeout
+  function scheduleNext(delayMs) {
+    clearTimeout(notifyTimeout);
+    notifyTimeout = setTimeout(() => {
+      triggerOne();
+      if (remaining > 0) {
+        // schedule the following one after intervalMs
+        nextNotifyAt = Date.now() + intervalMs;
+        scheduleNext(intervalMs);
+      } else {
+        // finished
+        stopNotifications();
+      }
+    }, delayMs);
+  }
+
+  // actually perform one notification and decrement counter
+  function triggerOne() {
+    const t = titleInput.value || 'Reminder';
+    const m = messageInput.value || '';
+    showNotification(t, m);
+    remaining = Math.max(0, remaining - 1);
+    remainingEl.textContent = remaining;
+  }
+
+  // countdown display (updates per second)
+  function startCountdownTimer() {
+    clearInterval(timerId);
+    timerId = setInterval(() => {
+      if (!nextNotifyAt || remaining <= 0) {
+        countdownEl.textContent = 'Idle';
+        return;
+      }
+      const diff = Math.max(0, nextNotifyAt - Date.now());
+      const s = Math.ceil(diff / 1000);
+      const mm = Math.floor(s / 60);
+      const ss = s % 60;
+      countdownEl.textContent = `${mm}m ${ss}s until next notification`;
+    }, 300);
+  }
+
+  // stop everything
+  function stopNotifications() {
+    clearInterval(timerId);
+    clearTimeout(notifyTimeout);
+    notifyTimeout = null;
+    timerId = null;
+    nextNotifyAt = 0;
+    remaining = 0;
+    remainingEl.textContent = '0';
+    countdownEl.textContent = 'Stopped';
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+  }
+
+  // wire up buttons
+  startBtn.addEventListener('click', startNotifications);
+  stopBtn.addEventListener('click', stopNotifications);
+
+  // update permission label when user comes back to tab (in case they changed permission)
+  document.addEventListener('visibilitychange', () => { updatePermissionLabel(); });
+
+  // init
+  updatePermissionLabel();
+})();
+</script>
+</body>
+</html>
