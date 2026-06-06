@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>BD Vault — One-Run Finance Manager</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text2: #64748b;
+      --primary: #0f766e;
+      --primary2: #14b8a6;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+      --success: #10b981;
+      --info: #3b82f6;
+      --border: #e2e8f0;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f1f5f9;
+      --text2: #94a3b8;
+      --primary: #2dd4bf;
+      --primary2: #14b8a6;
+      --danger: #f87171;
+      --warn: #fbbf24;
+      --success: #34d399;
+      --info: #60a5fa;
+      --border: #334155;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 800;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button,
+    .btn {
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    button:hover,
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+      border-color: var(--danger);
+    }
+
+    .btn-warn {
+      background: var(--warn);
+      color: #1e293b;
+      border-color: var(--warn);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+    }
+
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+
+    .btn-icon {
+      padding: 8px;
+      border-radius: 50%;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .tab {
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .tab .count {
+      font-size: 0.75rem;
+      opacity: 0.8;
+      margin-left: 4px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    @media (max-width: 480px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .card-sub {
+      font-size: 0.8rem;
+      color: var(--text2);
+      margin-top: 2px;
+    }
+
+    .card-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(20, 184, 166, 0.1);
+      color: var(--primary2);
+    }
+
+    .card-badge.bank {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+    }
+
+    .card-badge.card {
+      background: rgba(245, 158, 11, 0.1);
+      color: #d97706;
+    }
+
+    .card-badge.mfs {
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
+    }
+
+    .card-badge.wallet {
+      background: rgba(139, 92, 246, 0.1);
+      color: #8b5cf6;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-left: 8px;
+    }
+
+    .status-active {
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+    }
+
+    .status-inactive {
+      background: rgba(100, 116, 139, 0.12);
+      color: #64748b;
+    }
+
+    .status-dormant {
+      background: rgba(245, 158, 11, 0.12);
+      color: #d97706;
+    }
+
+    .status-closed {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+    }
+
+    .status-notinterested {
+      background: rgba(139, 92, 246, 0.12);
+      color: #8b5cf6;
+    }
+
+    .status-wrongaccount {
+      background: rgba(236, 72, 153, 0.12);
+      color: #ec4899;
+    }
+
+    .status-notforoperation {
+      background: rgba(99, 102, 241, 0.12);
+      color: #6366f1;
+    }
+
+    .status-suspended {
+      background: rgba(220, 38, 38, 0.12);
+      color: #dc2626;
+    }
+
+    .status-blocked {
+      background: rgba(153, 27, 27, 0.12);
+      color: #991b1b;
+    }
+
+    .status-lost {
+      background: rgba(153, 27, 27, 0.12);
+      color: #991b1b;
+    }
+
+    .status-underreview {
+      background: rgba(59, 130, 246, 0.12);
+      color: #3b82f6;
+    }
+
+    .field {
+      margin-bottom: 10px;
+    }
+
+    .field-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text2);
+      margin-bottom: 4px;
+    }
+
+    .field-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    .field-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-row .field-value {
+      flex: 1;
+    }
+
+    .copy-btn {
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      background: rgba(15, 118, 110, 0.08);
+      color: var(--primary);
+      border: 1px solid rgba(15, 118, 110, 0.15);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .copy-btn:hover {
+      background: rgba(15, 118, 110, 0.15);
+    }
+
+    .copy-btn.copied {
+      background: rgba(16, 185, 129, 0.15);
+      color: #059669;
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .pin-mask {
+      filter: blur(4px);
+      user-select: none;
+      transition: filter 0.2s;
+      cursor: pointer;
+    }
+
+    .pin-mask:hover,
+    .pin-mask.revealed {
+      filter: blur(0);
+      user-select: text;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      place-items: center;
+      z-index: 100;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.open {
+      display: grid;
+    }
+
+    .modal {
+      background: var(--card);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h2 {
+      font-size: 1.2rem;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text2);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: 2px solid var(--primary2);
+      border-color: var(--primary2);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text2);
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+      opacity: 0.4;
+    }
+
+    .empty-state h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .search-bar {
+      margin-bottom: 16px;
+    }
+
+    .search-bar input {
+      width: 100%;
+      max-width: 400px;
+      padding: 10px 14px;
+      border-radius: 999px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--text);
+      color: var(--bg);
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      box-shadow: var(--shadow);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 200;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .theme-toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      border-radius: 999px;
+      background: var(--border);
+      cursor: pointer;
+      transition: background 0.3s;
+      border: none;
+    }
+
+    .theme-toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--card);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s;
+    }
+
+    [data-theme="dark"] .theme-toggle {
+      background: var(--primary);
+    }
+
+    [data-theme="dark"] .theme-toggle::after {
+      transform: translateX(20px);
+    }
+
+    .export-preview {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin-bottom: 16px;
+    }
+
+    .danger-zone {
+      border: 1px solid var(--danger);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-top: 20px;
+    }
+
+    .danger-zone h4 {
+      color: var(--danger);
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .banner {
+      background: linear-gradient(90deg, var(--primary), var(--primary2));
+      color: white;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .banner button {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+
+    .banner button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  </style>
+  <base target="_blank">
+</head>
+
+<body>
+
+  <div class="container">
+    <header>
+      <h1>
+        <div class="logo">BD</div> BD Vault
+      </h1>
+      <div class="actions">
+        <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+        <button class="btn btn-ghost btn-sm" onclick="openImport()">📥 Import</button>
+        <button class="btn btn-ghost btn-sm" onclick="openExport()">📤 Export</button>
+        <button class="btn btn-primary" onclick="openAdd()">➕ Add New</button>
+      </div>
+    </header>
+
+    <div class="banner">
+      🔒 <strong>One-Run Mode:</strong> Nothing is saved to browser storage. Data lives only in this tab. Export before
+      closing.
+      <button onclick="openExport()">Export Now</button>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="search" placeholder="🔍 Search by bank, name, number, status, or note..."
+        oninput="render()">
+    </div>
+
+    <div class="tabs" id="tabs">
+      <div class="tab active" onclick="setTab('all')">All <span class="count" id="c-all">0</span></div>
+      <div class="tab" onclick="setTab('bank')">🏦 Bank <span class="count" id="c-bank">0</span></div>
+      <div class="tab" onclick="setTab('card')">💳 Card <span class="count" id="c-card">0</span></div>
+      <div class="tab" onclick="setTab('mfs')">📱 MFS <span class="count" id="c-mfs">0</span></div>
+      <div class="tab" onclick="setTab('wallet')">👛 Wallet <span class="count" id="c-wallet">0</span></div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="modal"></div>
+  </div>
+
+  <div class="toast" id="toast">Copied!</div>
+
+  <script>
+    /* ─── NO STORAGE POLICY ─── */
+
+    const BANKS = [
+      "Dutch-Bangla Bank", "BRAC Bank", "Islami Bank Bangladesh PLC", "Pubali Bank", "Sonali Bank",
+      "Janata Bank", "Rupali Bank", "AB Bank", "Bank Asia", "City Bank", "Eastern Bank", "IFIC Bank",
+      "Mutual Trust Bank", "One Bank", "Prime Bank", "Southeast Bank", "Standard Bank", "Trust Bank",
+      "United Commercial Bank", "Mercantile Bank", "First Security Islami Bank", "Al-Arafah Islami Bank",
+      "Meghna Bank", "Social Islami Bank", "Shahjalal Islami Bank", "NRB Bank", "NRB Commercial Bank",
+      "South Bangla Agriculture & Commerce Bank", "The Farmers Bank", "Bengal Commercial Bank"
+    ];
+
+    const MFS_PROVIDERS = [
+      "bKash", "Nagad", "Rocket (DBBL)", "Upay", "Tap (Trust Axiata Pay)",
+      "SureCash", "MyCash (Mercantile)", "Meghna Pay", "mCash (Islami Bank)"
+    ];
+
+    const WALLET_PROVIDERS = [
+      "CellFin (Islami Bank)", "NexusPay (DBBL)", "OK Wallet (One Bank)", "TeleCash (Southeast Bank)", "Meghna Pay (Meghna Bank)",
+      "FirstCash (FSIBL)", "Islamic Wallet (Al-Arafah)", "City Touch (City Bank)", "EBL SkyBanking (Eastern Bank)",
+      "MTB Smart Banking (Mutual Trust Bank)", "AB Direct (AB Bank)", "iBanking (BRAC Bank)",
+      "Prime Bank Mobile Banking", "Southeast Bank Digital Wallet", "UCB iBanking"
+    ];
+
+    const CARD_NETWORKS = ["Visa", "Mastercard", "American Express", "UnionPay", "Diners Club"];
+    const CARD_TYPES = ["Debit", "Credit", "Prepaid"];
+    const ACCOUNT_TYPES = ["Savings", "Current", "FDR", "DPS", "Loan", "Waqfa"];
+    const MFS_TYPES = ["Personal", "Agent", "Merchant"];
+    const WALLET_TYPES = ["Personal", "Business", "Agent"];
+
+    const STATUSES = [
+      { value: "active", label: "🟢 Active" },
+      { value: "inactive", label: "⚪ Inactive" },
+      { value: "dormant", label: "🟡 Dormant" },
+      { value: "closed", label: "🔴 Closed" },
+      { value: "notinterested", label: "🟣 Not Interested" },
+      { value: "wrongaccount", label: "🩷 Wrong Account" },
+      { value: "notforoperation", label: "🔵 Not For Operation" },
+      { value: "suspended", label: "🟤 Suspended" },
+      { value: "lost", label: "🟤 Lost" },
+      { value: "blocked", label: "⛔ Blocked" },
+      { value: "underreview", label: "🔷 Under Review" }
+    ];
+
+    let data = [];
+    let currentTab = 'all';
+    let editingId = null;
+    let darkTheme = false;
+
+    function init() { render(); }
+
+    function toggleTheme() {
+      darkTheme = !darkTheme;
+      document.documentElement.setAttribute('data-theme', darkTheme ? 'dark' : 'light');
+    }
+
+    function setTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.closest('.tab').classList.add('active');
+      render();
+    }
+
+    function getStatusBadge(status) {
+      const s = (status || 'active').toLowerCase().replace(/[^a-z]/g, '');
+      const found = STATUSES.find(x => x.value === s);
+      return `<span class="status-badge status-${s}">${found ? found.label : '🟢 Active'}</span>`;
+    }
+
+    function getDisplayTitle(item) {
+      return item.title || item.accountName || item.cardName || item.provider || 'Untitled';
+    }
+
+    function render() {
+      const grid = document.getElementById('grid');
+      const q = document.getElementById('search').value.toLowerCase();
+      const filtered = data.filter(item => {
+        if (currentTab !== 'all' && item.type !== currentTab) return false;
+        if (!q) return true;
+        return JSON.stringify(item).toLowerCase().includes(q);
+      });
+
+      const counts = { all: data.length, bank: 0, card: 0, mfs: 0, wallet: 0 };
+      data.forEach(d => { if (counts[d.type] !== undefined) counts[d.type]++; });
+      Object.keys(counts).forEach(k => { const el = document.getElementById('c-' + k); if (el) el.textContent = counts[k]; });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <h3>No records found</h3>
+          <p>Add your first bank account, card, MFS, or digital wallet to get started.</p>
+        </div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(item => renderCard(item)).join('');
+    }
+
+    function renderCard(item) {
+      const isBank = item.type === 'bank';
+      const isCard = item.type === 'card';
+      const isMFS = item.type === 'mfs';
+      const isWallet = item.type === 'wallet';
+      const badgeClass = item.type;
+      const badgeText = isBank ? 'Bank' : isCard ? 'Card' : isMFS ? 'MFS' : 'Wallet';
+
+      let fields = '';
+      if (isBank) {
+        fields += fieldRow('Bank', item.bankName);
+        fields += fieldRow('Account Name', item.accountName);
+        fields += fieldRow('Account Number', item.accountNumber, true);
+        fields += fieldRow('Branch', item.branch);
+        fields += fieldRow('Routing No', item.routing);
+        fields += fieldRow('Type', item.accountType);
+      } else if (isCard) {
+        fields += fieldRow('Bank', item.bankName);
+        fields += fieldRow('Card Name', item.cardName);
+        fields += fieldRow('Card Number', item.cardNumber, true);
+        fields += fieldRow('Network', item.network);
+        fields += fieldRow('Type', item.cardType);
+        fields += fieldRow('Expiry', item.expiry);
+        fields += fieldRow('CVV', item.cvv, true);
+      } else if (isMFS) {
+        fields += fieldRow('Provider', item.provider);
+        fields += fieldRow('Account Name', item.accountName);
+        fields += fieldRow('Number', item.accountNumber, true);
+        fields += fieldRow('Type', item.mfsType);
+      } else if (isWallet) {
+        fields += fieldRow('Provider', item.provider);
+        fields += fieldRow('Account Name', item.accountName);
+        fields += fieldRow('Number', item.accountNumber, true);
+        fields += fieldRow('Type', item.walletType);
+      }
+
+      if (item.pin) {
+        fields += `<div class="field">
+          <div class="field-label">PIN</div>
+          <div class="field-row">
+            <span class="field-value pin-mask" onclick="this.classList.toggle('revealed')" title="Click to reveal">${escapeHtml(item.pin)}</span>
+            <button class="copy-btn" onclick="copy('${escapeJs(item.pin)}')">Copy</button>
+          </div>
+        </div>`;
+      }
+      if (item.pinHint) {
+        fields += `<div class="field">
+          <div class="field-label">PIN Hint</div>
+          <div class="field-row">
+            <span class="field-value">${escapeHtml(item.pinHint)}</span>
+            <button class="copy-btn" onclick="copy('${escapeJs(item.pinHint)}')">Copy</button>
+          </div>
+        </div>`;
+      }
+      if (item.notes) {
+        fields += `<div class="field">
+          <div class="field-label">Notes</div>
+          <div class="field-value" style="font-size:0.85rem; color:var(--text2);">${escapeHtml(item.notes)}</div>
+        </div>`;
+      }
+
+      const fullText = buildFullText(item);
+      const statusBadge = getStatusBadge(item.status);
+      const displayTitle = getDisplayTitle(item);
+
+      return `
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">${escapeHtml(displayTitle)}${statusBadge}</div>
+              <div class="card-sub">${escapeHtml(item.bankName || item.provider || '')}</div>
+            </div>
+            <div class="card-badge ${badgeClass}">${badgeText}</div>
+          </div>
+          ${fields}
+          <div class="card-actions">
+            <button class="btn btn-sm btn-ghost" onclick="copy('${escapeJs(fullText)}')">📋 Copy All</button>
+            <button class="btn btn-sm btn-ghost" onclick="copy('${escapeJs(fullText)}', true)">📄 Copy Line</button>
+            <button class="btn btn-sm btn-ghost" onclick="editItem('${item.id}')">✏️ Edit</button>
+            <button class="btn btn-sm btn-ghost" style="color:var(--danger);" onclick="deleteItem('${item.id}')">🗑️ Delete</button>
+          </div>
+        </div>`;
+    }
+
+    function fieldRow(label, value, sensitive = false) {
+      if (!value) return '';
+      const display = sensitive ? maskValue(value) : escapeHtml(value);
+      return `<div class="field">
+        <div class="field-label">${label}</div>
+        <div class="field-row">
+          <span class="field-value" ${sensitive ? `onclick="this.textContent='${escapeJs(value)}';this.style.userSelect='text'" style="cursor:pointer;" title="Click to reveal"` : ''}>${display}</span>
+          <button class="copy-btn" onclick="copy('${escapeJs(value)}')">Copy</button>
+        </div>
+      </div>`;
+    }
+
+    function maskValue(v) {
+      if (v.length <= 4) return '•'.repeat(v.length);
+      return '•'.repeat(v.length - 4) + v.slice(-4);
+    }
+
+    function buildFullText(item) {
+      const lines = [];
+      if (item.title) lines.push(`Title: ${item.title}`);
+      lines.push(`Status: ${item.status || 'active'}`);
+
+      if (item.type === 'bank') {
+        lines.push(`Bank: ${item.bankName}`);
+        lines.push(`Account Name: ${item.accountName}`);
+        lines.push(`Account Number: ${item.accountNumber}`);
+        if (item.branch) lines.push(`Branch: ${item.branch}`);
+        if (item.routing) lines.push(`Routing: ${item.routing}`);
+        if (item.accountType) lines.push(`Type: ${item.accountType}`);
+      } else if (item.type === 'card') {
+        lines.push(`Bank: ${item.bankName}`);
+        lines.push(`Card: ${item.cardName}`);
+        lines.push(`Number: ${item.cardNumber}`);
+        lines.push(`Network: ${item.network}`);
+        lines.push(`Type: ${item.cardType}`);
+        if (item.expiry) lines.push(`Expiry: ${item.expiry}`);
+        if (item.cvv) lines.push(`CVV: ${item.cvv}`);
+      } else if (item.type === 'mfs') {
+        lines.push(`Provider: ${item.provider}`);
+        lines.push(`Name: ${item.accountName}`);
+        lines.push(`Number: ${item.accountNumber}`);
+        if (item.mfsType) lines.push(`Type: ${item.mfsType}`);
+      } else if (item.type === 'wallet') {
+        lines.push(`Provider: ${item.provider}`);
+        lines.push(`Name: ${item.accountName}`);
+        lines.push(`Number: ${item.accountNumber}`);
+        if (item.walletType) lines.push(`Type: ${item.walletType}`);
+      }
+
+      if (item.pin) lines.push(`PIN: ${item.pin}`);
+      if (item.pinHint) lines.push(`PIN Hint: ${item.pinHint}`);
+      if (item.notes) lines.push(`Notes: ${item.notes}`);
+      return lines.join('\n');
+    }
+
+    function copy(text, asLine = false) {
+      const clean = text.replace(/\n/g, asLine ? ' | ' : '\n');
+      navigator.clipboard.writeText(clean).then(() => toast('Copied!'));
+    }
+
+    function toast(msg, error = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.background = error ? 'var(--danger)' : 'var(--text)';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    function openModal(html) {
+      document.getElementById('modal').innerHTML = html;
+      document.getElementById('modalOverlay').classList.add('open');
+    }
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('open');
+      editingId = null;
+    }
+
+    function openAdd() {
+      const html = `
+        <div class="modal-header"><h2>➕ Add New Record</h2><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Type</label>
+            <select id="ftype" onchange="toggleFormFields()">
+              <option value="bank">🏦 Bank Account</option>
+              <option value="card">💳 Card</option>
+              <option value="mfs">📱 MFS Account</option>
+              <option value="wallet">👛 Digital Wallet</option>
+            </select>
+          </div>
+          <div id="formFields"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Status</label>
+              <select id="fstatus">${STATUSES.map(s => `<option value="${s.value}">${s.label}</option>`).join('')}</select>
+            </div>
+            <div class="form-group">
+              <label>Title / Label</label>
+              <input type="text" id="ftitle" placeholder="e.g. Salary Account">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>PIN / Passcode</label>
+              <input type="text" id="fpin" placeholder="e.g. 1234">
+            </div>
+            <div class="form-group">
+              <label>PIN Hint</label>
+              <input type="text" id="fpinHint" placeholder="e.g. Birth year">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea id="fnotes" placeholder="Any extra info..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveItem()">Save Record</button>
+        </div>
+      `;
+      openModal(html);
+      toggleFormFields();
+    }
+
+    function toggleFormFields() {
+      const type = document.getElementById('ftype').value;
+      let html = '';
+      if (type === 'bank') {
+        html += `<div class="form-group"><label>Bank Name</label><select id="fbank">${BANKS.map(b => `<option value="${b}">${b}</option>`).join('')}</select></div>`;
+        html += `<div class="form-row">`;
+        html += `<div class="form-group"><label>Account Name</label><input type="text" id="faccName" placeholder="e.g. John Doe"></div>`;
+        html += `<div class="form-group"><label>Account Number</label><input type="text" id="faccNum" placeholder="e.g. 12345678901"></div>`;
+        html += `</div>`;
+        html += `<div class="form-row">`;
+        html += `<div class="form-group"><label>Branch</label><input type="text" id="fbranch" placeholder="e.g. Dhanmondi"></div>`;
+        html += `<div class="form-group"><label>Routing Number</label><input type="text" id="frouting" placeholder="e.g. 0902601"></div>`;
+        html += `</div>`;
+        html += `<div class="form-group"><label>Account Type</label><select id="faccType">${ACCOUNT_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}</select></div>`;
+      } else if (type === 'card') {
+        html += `<div class="form-group"><label>Bank Name</label><select id="fbank">${BANKS.map(b => `<option value="${b}">${b}</option>`).join('')}</select></div>`;
+        html += `<div class="form-row">`;
+        html += `<div class="form-group"><label>Card Name / Label</label><input type="text" id="fcardName" placeholder="e.g. Shopping Card"></div>`;
+        html += `<div class="form-group"><label>Card Number</label><input type="text" id="fcardNum" placeholder="e.g. 4242 4242 4242 4242"></div>`;
+        html += `</div>`;
+        html += `<div class="form-row">`;
+        html += `<div class="form-group"><label>Network</label><select id="fnetwork">${CARD_NETWORKS.map(n => `<option value="${n}">${n}</option>`).join('')}</select></div>`;
+        html += `<div class="form-group"><label>Card Type</label><select id="fcardType">${CARD_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}</select></div>`;
+        html += `</div>`;
+        html += `<div class="form-row">`;
+        html += `<div class="form-group"><label>Expiry (MM/YY)</label><input type="text" id="fexpiry" placeholder="e.g. 09/27"></div>`;
+        html += `<div class="form-group"><label>CVV</label><input type="text" id="fcvv" placeholder="e.g. 123"></div>`;
+        html += `</div>`;
+      } else if (type === 'mfs') {
+        html += `<div class="form-group"><label>MFS Provider</label><select id="fprovider">${MFS_PROVIDERS.map(p => `<option value="${p}">${p}</option>`).join('')}</select></div>`;
+        html += `<div class="form-row">`;
+        html += `<div class="form-group"><label>Account Name</label><input type="text" id="faccName" placeholder="e.g. John Doe"></div>`;
+        html += `<div class="form-group"><label>Account Number / Mobile</label><input type="text" id="faccNum" placeholder="e.g. 01712 345678"></div>`;
+        html += `</div>`;
+        html += `<div class="form-group"><label>Account Type</label><select id="fmfsType">${MFS_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}</select></div>`;
+      } else if (type === 'wallet') {
+        html += `<div class="form-group"><label>Digital Wallet Provider</label><select id="fprovider">${WALLET_PROVIDERS.map(p => `<option value="${p}">${p}</option>`).join('')}</select></div>`;
+        html += `<div class="form-row">`;
+        html += `<div class="form-group"><label>Account Name</label><input type="text" id="faccName" placeholder="e.g. John Doe"></div>`;
+        html += `<div class="form-group"><label>Wallet Number / ID / Mobile</label><input type="text" id="faccNum" placeholder="e.g. 01712 345678"></div>`;
+        html += `</div>`;
+        html += `<div class="form-group"><label>Wallet Type</label><select id="fwalletType">${WALLET_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}</select></div>`;
+      }
+      document.getElementById('formFields').innerHTML = html;
+    }
+
+    function saveItem() {
+      const type = document.getElementById('ftype').value;
+      const item = {
+        id: editingId || crypto.randomUUID(),
+        type,
+        status: document.getElementById('fstatus').value,
+        title: document.getElementById('ftitle').value || '',
+        pin: document.getElementById('fpin').value || '',
+        pinHint: document.getElementById('fpinHint').value || '',
+        notes: document.getElementById('fnotes').value || ''
+      };
+
+      if (type === 'bank') {
+        item.bankName = document.getElementById('fbank').value;
+        item.accountName = document.getElementById('faccName').value;
+        item.accountNumber = document.getElementById('faccNum').value;
+        item.branch = document.getElementById('fbranch').value;
+        item.routing = document.getElementById('frouting').value;
+        item.accountType = document.getElementById('faccType').value;
+      } else if (type === 'card') {
+        item.bankName = document.getElementById('fbank').value;
+        item.cardName = document.getElementById('fcardName').value;
+        item.cardNumber = document.getElementById('fcardNum').value;
+        item.network = document.getElementById('fnetwork').value;
+        item.cardType = document.getElementById('fcardType').value;
+        item.expiry = document.getElementById('fexpiry').value;
+        item.cvv = document.getElementById('fcvv').value;
+      } else if (type === 'mfs') {
+        item.provider = document.getElementById('fprovider').value;
+        item.accountName = document.getElementById('faccName').value;
+        item.accountNumber = document.getElementById('faccNum').value;
+        item.mfsType = document.getElementById('fmfsType').value;
+      } else if (type === 'wallet') {
+        item.provider = document.getElementById('fprovider').value;
+        item.accountName = document.getElementById('faccName').value;
+        item.accountNumber = document.getElementById('faccNum').value;
+        item.walletType = document.getElementById('fwalletType').value;
+      }
+
+      if (!item.accountName && !item.cardName && !item.accountNumber && !item.title) {
+        toast('Please fill at least one field.', true); return;
+      }
+
+      if (editingId) {
+        const idx = data.findIndex(d => d.id === editingId);
+        if (idx > -1) data[idx] = item;
+      } else {
+        data.push(item);
+      }
+      render();
+      closeModal();
+      toast(editingId ? 'Updated!' : 'Saved!');
+    }
+
+    function editItem(id) {
+      const item = data.find(d => d.id === id);
+      if (!item) return;
+      editingId = id;
+      openAdd();
+      document.getElementById('ftype').value = item.type;
+      toggleFormFields();
+      if (item.type === 'bank') {
+        setSelect('fbank', item.bankName); setVal('faccName', item.accountName); setVal('faccNum', item.accountNumber);
+        setVal('fbranch', item.branch); setVal('frouting', item.routing); setSelect('faccType', item.accountType);
+      } else if (item.type === 'card') {
+        setSelect('fbank', item.bankName); setVal('fcardName', item.cardName); setVal('fcardNum', item.cardNumber);
+        setSelect('fnetwork', item.network); setSelect('fcardType', item.cardType); setVal('fexpiry', item.expiry); setVal('fcvv', item.cvv);
+      } else if (item.type === 'mfs') {
+        setSelect('fprovider', item.provider); setVal('faccName', item.accountName); setVal('faccNum', item.accountNumber);
+        setSelect('fmfsType', item.mfsType);
+      } else if (item.type === 'wallet') {
+        setSelect('fprovider', item.provider); setVal('faccName', item.accountName); setVal('faccNum', item.accountNumber);
+        setSelect('fwalletType', item.walletType);
+      }
+      setSelect('fstatus', item.status || 'active');
+      setVal('ftitle', item.title || '');
+      setVal('fpin', item.pin || '');
+      setVal('fpinHint', item.pinHint || '');
+      setVal('fnotes', item.notes || '');
+    }
+
+    function setVal(id, val) { const el = document.getElementById(id); if (el) el.value = val || ''; }
+    function setSelect(id, val) { const el = document.getElementById(id); if (el) { el.value = val || el.options[0].value; } }
+
+    function deleteItem(id) {
+      if (!confirm('Are you sure you want to delete this record?')) return;
+      data = data.filter(d => d.id !== id);
+      render();
+      toast('Deleted');
+    }
+
+    function openExport() {
+      const md = generateMD();
+      const txt = generateTXT();
+      const html = `
+        <div class="modal-header"><h2>📤 Export Offline Backup</h2><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
+        <div class="modal-body">
+          <p style="margin-bottom:12px; color:var(--text2); font-size:0.9rem;">Save your data to a <strong>.txt</strong> or <strong>.md</strong> file. Keep it somewhere safe (USB, encrypted drive, etc.).</p>
+          <label>Markdown (.md) Preview</label>
+          <div class="export-preview">${escapeHtml(md)}</div>
+          <div class="form-row">
+            <button class="btn btn-primary" onclick="downloadFile('${escapeJs(md)}', 'bdvault_backup.md', 'text/markdown')">⬇️ Download .md</button>
+            <button class="btn btn-ghost" onclick="downloadFile('${escapeJs(txt)}', 'bdvault_backup.txt', 'text/plain')">⬇️ Download .txt</button>
+          </div>
+          <div class="danger-zone">
+            <h4>⚠️ Security Warning</h4>
+            <p style="font-size:0.85rem; color:var(--text2);">Exported files are <strong>unencrypted</strong>. Store them in an encrypted folder or password-protected ZIP. Do not upload to cloud without encryption.</p>
+          </div>
+        </div>
+      `;
+      openModal(html);
+    }
+
+    function generateMD() {
+      let out = '# BD Vault Backup\n\n> Generated: ' + new Date().toLocaleString() + '\n\n';
+      const sections = { bank: '## 🏦 Bank Accounts\n\n', card: '## 💳 Cards\n\n', mfs: '## 📱 MFS Accounts\n\n', wallet: '## 👛 Digital Wallets\n\n' };
+      data.forEach(item => {
+        const t = buildFullText(item).split('\n').map(l => `- ${l}`).join('\n');
+        const header = escapeMd(getDisplayTitle(item));
+        sections[item.type] += `### ${header}\n${t}\n\n`;
+      });
+      Object.values(sections).forEach(s => out += s);
+      return out;
+    }
+
+    function generateTXT() {
+      let out = 'BD VAULT BACKUP\n================\nGenerated: ' + new Date().toLocaleString() + '\n\n';
+      const sections = { bank: '--- BANK ACCOUNTS ---\n\n', card: '--- CARDS ---\n\n', mfs: '--- MFS ACCOUNTS ---\n\n', wallet: '--- DIGITAL WALLETS ---\n\n' };
+      data.forEach(item => {
+        const t = buildFullText(item);
+        const header = getDisplayTitle(item);
+        sections[item.type] += `[${header}]\n${t}\n\n`;
+      });
+      Object.values(sections).forEach(s => out += s);
+      return out;
+    }
+
+    function downloadFile(content, filename, mime) {
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+      toast('Download started!');
+    }
+
+    function openImport() {
+      const html = `
+        <div class="modal-header"><h2>📥 Import from File</h2><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
+        <div class="modal-body">
+          <p style="margin-bottom:12px; color:var(--text2); font-size:0.9rem;">Paste your exported <strong>.txt</strong> or <strong>.md</strong> content below. This will <strong>replace</strong> current session data.</p>
+          <div class="form-group">
+            <textarea id="importArea" style="min-height:180px;" placeholder="Paste backup content here..."></textarea>
+          </div>
+          <button class="btn btn-primary" style="width:100%;" onclick="runImport()">Import & Replace</button>
+          <div class="danger-zone" style="margin-top:16px;">
+            <h4>⚠️ Warning</h4>
+            <p style="font-size:0.85rem; color:var(--text2);">Importing will overwrite all current session records. Make sure you have a backup if needed.</p>
+          </div>
+        </div>
+      `;
+      openModal(html);
+    }
+
+    function runImport() {
+      const raw = document.getElementById('importArea').value.trim();
+      if (!raw) { toast('Nothing to import', true); return; }
+      try {
+        const parsed = parseBackup(raw);
+        if (parsed.length === 0) { toast('No valid records found', true); return; }
+        if (!confirm(`Found ${parsed.length} records. Replace current session data?`)) return;
+        data = parsed;
+        render();
+        closeModal();
+        toast('Import successful!');
+      } catch (e) {
+        toast('Import failed: ' + e.message, true);
+      }
+    }
+
+    function parseBackup(text) {
+      const out = [];
+      const blocks = text.split(/\n\n+/);
+      let current = null;
+      blocks.forEach(block => {
+        const lines = block.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#') && !l.startsWith('>') && !l.startsWith('---') && !l.startsWith('==='));
+        if (lines.length === 0) return;
+        const first = lines[0];
+        if (first.startsWith('[') && first.includes(']')) {
+          current = { id: crypto.randomUUID(), title: first.replace(/[\[\]]/g, '') };
+        } else if (first.startsWith('### ')) {
+          current = { id: crypto.randomUUID(), title: first.replace('### ', '') };
+        } else if (first.startsWith('- ')) {
+          if (!current) current = { id: crypto.randomUUID() };
+          parseLine(current, first.replace('- ', ''));
+        } else {
+          if (!current) current = { id: crypto.randomUUID() };
+          parseLine(current, first);
+        }
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].replace(/^-\s*/, '');
+          parseLine(current, line);
+        }
+
+        if (current) {
+          // 1. Force context identification before resolving generic values
+          if (!current.type) {
+            if (current.cardNumber || current.cardName || current.isCardContext) {
+              current.type = 'card';
+            } else if (current.provider) {
+              current.type = WALLET_PROVIDERS.includes(current.provider) ? 'wallet' : 'mfs';
+            } else if (current.accountNumber || current.bankName) {
+              current.type = 'bank';
+            }
+          }
+
+          // 2. Fix mapping mismatch: Move temp values to their proper places based on the type
+          if (current.type === 'card' && current.accountNumber && !current.cardNumber) {
+            current.cardNumber = current.accountNumber;
+            delete current.accountNumber;
+          }
+
+          if (current.tempTypeField) {
+            const t = current.tempTypeField;
+            if (current.type === 'card') current.cardType = t;
+            else if (current.type === 'mfs') current.mfsType = t;
+            else if (current.type === 'wallet') current.walletType = t;
+            else current.accountType = t;
+            delete current.tempTypeField;
+          }
+
+          // Clean temporary context flags
+          delete current.isCardContext;
+
+          if (current.accountNumber || current.cardNumber || current.title) {
+            out.push(current);
+          }
+          current = null;
+        }
+      });
+      return out;
+    }
+
+    function parseLine(item, line) {
+      const kv = line.split(/:\s*/);
+      if (kv.length < 2) return;
+      const k = kv[0].trim().toLowerCase();
+      const v = kv.slice(1).join(':').trim();
+
+      if (k === 'status') { item.status = v; }
+      else if (k === 'title' || k === 'label') { item.title = v; }
+      else if (k.includes('bank') && !k.includes('name')) { item.bankName = v; }
+      else if (k === 'account name' || k === 'name') { item.accountName = v; }
+      else if (k === 'account number' || k === 'number') { item.accountNumber = v; } // Staged safely here first
+      else if (k === 'branch') { item.branch = v; }
+      else if (k === 'routing' || k === 'routing number') { item.routing = v; }
+      else if (k === 'card' || k === 'card name') { item.cardName = v; item.type = 'card'; }
+      else if (k === 'card number') { item.cardNumber = v; item.type = 'card'; }
+      else if (k === 'network') { item.network = v; item.type = 'card'; }
+      else if (k === 'card type') { item.cardType = v; item.type = 'card'; }
+      else if (k === 'expiry') { item.expiry = v; item.isCardContext = true; }
+      else if (k === 'cvv') { item.cvv = v; item.isCardContext = true; }
+      else if (k === 'provider') {
+        item.provider = v;
+        item.type = WALLET_PROVIDERS.includes(v) ? 'wallet' : 'mfs';
+      }
+      else if (k === 'type') {
+        if (item.type === 'card') item.cardType = v;
+        else if (item.type === 'mfs') item.mfsType = v;
+        else if (item.type === 'wallet') item.walletType = v;
+        else if (item.type === 'bank') item.accountType = v;
+        else item.tempTypeField = v;
+      }
+      else if (k === 'pin' || k === 'passcode') { item.pin = v; }
+      else if (k === 'pin hint') { item.pinHint = v; }
+      else if (k === 'notes') { item.notes = v; }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function escapeJs(str) {
+      if (!str) return '';
+      return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
+    }
+    function escapeMd(str) {
+      if (!str) return '';
+      return str.replace(/[\*_{}[\]()#+\-.!]/g, '\\$&');
+    }
+
+    init();
+  </script>
+</body>
+
+</html>
