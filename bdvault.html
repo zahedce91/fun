@@ -1151,6 +1151,8 @@
           <div class="form-row">
             <button class="btn btn-primary" onclick="downloadFile('${escapeJs(md)}', 'bdvault_backup.md', 'text/markdown')">⬇️ Download .md</button>
             <button class="btn btn-ghost" onclick="downloadFile('${escapeJs(txt)}', 'bdvault_backup.txt', 'text/plain')">⬇️ Download .txt</button>
+            <button class="btn btn-ghost" onclick="copy('${escapeJs(md)}')">📋 Copy .md</button>
+            <button class="btn btn-ghost" onclick="copy('${escapeJs(txt)}')">📋 Copy .txt</button>
           </div>
           <div class="danger-zone">
             <h4>⚠️ Security Warning</h4>
