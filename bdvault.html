@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +8,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>BD Vault — One-Run Finance Manager</title>
+  <title>BD Vault — Encrypted Finance Manager</title>
   <style>
     :root {
       --bg: #f8fafc;
@@ -116,6 +117,13 @@
     .btn:hover {
       transform: translateY(-1px);
       box-shadow: var(--shadow);
+    }
+
+    button:disabled,
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
     }
 
     .btn-primary {
@@ -271,65 +279,19 @@
       margin-left: 8px;
     }
 
-    .status-active {
-      background: rgba(16, 185, 129, 0.12);
-      color: #059669;
-    }
+    .status-active { background: rgba(16, 185, 129, 0.12); color: #059669; }
+    .status-inactive { background: rgba(100, 116, 139, 0.12); color: #64748b; }
+    .status-dormant { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+    .status-closed { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+    .status-notinterested { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
+    .status-wrongaccount { background: rgba(236, 72, 153, 0.12); color: #ec4899; }
+    .status-notforoperation { background: rgba(99, 102, 241, 0.12); color: #6366f1; }
+    .status-suspended { background: rgba(220, 38, 38, 0.12); color: #dc2626; }
+    .status-blocked { background: rgba(153, 27, 27, 0.12); color: #991b1b; }
+    .status-lost { background: rgba(153, 27, 27, 0.12); color: #991b1b; }
+    .status-underreview { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
 
-    .status-inactive {
-      background: rgba(100, 116, 139, 0.12);
-      color: #64748b;
-    }
-
-    .status-dormant {
-      background: rgba(245, 158, 11, 0.12);
-      color: #d97706;
-    }
-
-    .status-closed {
-      background: rgba(239, 68, 68, 0.12);
-      color: #ef4444;
-    }
-
-    .status-notinterested {
-      background: rgba(139, 92, 246, 0.12);
-      color: #8b5cf6;
-    }
-
-    .status-wrongaccount {
-      background: rgba(236, 72, 153, 0.12);
-      color: #ec4899;
-    }
-
-    .status-notforoperation {
-      background: rgba(99, 102, 241, 0.12);
-      color: #6366f1;
-    }
-
-    .status-suspended {
-      background: rgba(220, 38, 38, 0.12);
-      color: #dc2626;
-    }
-
-    .status-blocked {
-      background: rgba(153, 27, 27, 0.12);
-      color: #991b1b;
-    }
-
-    .status-lost {
-      background: rgba(153, 27, 27, 0.12);
-      color: #991b1b;
-    }
-
-    .status-underreview {
-      background: rgba(59, 130, 246, 0.12);
-      color: #3b82f6;
-    }
-
-    .field {
-      margin-bottom: 10px;
-    }
-
+    .field { margin-bottom: 10px; }
     .field-label {
       font-size: 0.7rem;
       font-weight: 700;
@@ -338,24 +300,19 @@
       color: var(--text2);
       margin-bottom: 4px;
     }
-
     .field-value {
       font-size: 0.95rem;
       font-weight: 600;
       color: var(--text);
       word-break: break-all;
     }
-
     .field-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 8px;
     }
-
-    .field-row .field-value {
-      flex: 1;
-    }
+    .field-row .field-value { flex: 1; }
 
     .copy-btn {
       padding: 4px 8px;
@@ -367,16 +324,7 @@
       cursor: pointer;
       white-space: nowrap;
     }
-
-    .copy-btn:hover {
-      background: rgba(15, 118, 110, 0.15);
-    }
-
-    .copy-btn.copied {
-      background: rgba(16, 185, 129, 0.15);
-      color: #059669;
-      border-color: rgba(16, 185, 129, 0.2);
-    }
+    .copy-btn:hover { background: rgba(15, 118, 110, 0.15); }
 
     .card-actions {
       display: flex;
@@ -393,12 +341,7 @@
       transition: filter 0.2s;
       cursor: pointer;
     }
-
-    .pin-mask:hover,
-    .pin-mask.revealed {
-      filter: blur(0);
-      user-select: text;
-    }
+    .pin-mask:hover, .pin-mask.revealed { filter: blur(0); user-select: text; }
 
     .modal-overlay {
       position: fixed;
@@ -411,10 +354,7 @@
       padding: 20px;
       overflow-y: auto;
     }
-
-    .modal-overlay.open {
-      display: grid;
-    }
+    .modal-overlay.open { display: grid; }
 
     .modal {
       background: var(--card);
@@ -426,17 +366,9 @@
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
       animation: slideUp 0.3s ease;
     }
-
     @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .modal-header {
@@ -446,30 +378,12 @@
       justify-content: space-between;
       align-items: center;
     }
+    .modal-header h2 { font-size: 1.2rem; }
+    .modal-body { padding: 24px; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: var(--text2); }
 
-    .modal-header h2 {
-      font-size: 1.2rem;
-    }
-
-    .modal-body {
-      padding: 24px;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: var(--text2);
-    }
-
-    input,
-    select,
-    textarea {
+    input, select, textarea {
       width: 100%;
       padding: 10px 12px;
       border-radius: var(--radius-sm);
@@ -479,30 +393,11 @@
       font-size: 0.9rem;
       font-family: inherit;
     }
+    input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary2); border-color: var(--primary2); }
+    textarea { resize: vertical; min-height: 80px; }
 
-    input:focus,
-    select:focus,
-    textarea:focus {
-      outline: 2px solid var(--primary2);
-      border-color: var(--primary2);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    @media (max-width: 480px) {
-      .form-row {
-        grid-template-columns: 1fr;
-      }
-    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
 
     .modal-footer {
       padding: 16px 24px;
@@ -510,37 +405,15 @@
       display: flex;
       justify-content: flex-end;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text2);
-    }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text2); }
+    .empty-state svg { width: 64px; height: 64px; margin-bottom: 16px; opacity: 0.4; }
+    .empty-state h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--text); }
 
-    .empty-state svg {
-      width: 64px;
-      height: 64px;
-      margin-bottom: 16px;
-      opacity: 0.4;
-    }
-
-    .empty-state h3 {
-      font-size: 1.1rem;
-      margin-bottom: 8px;
-      color: var(--text);
-    }
-
-    .search-bar {
-      margin-bottom: 16px;
-    }
-
-    .search-bar input {
-      width: 100%;
-      max-width: 400px;
-      padding: 10px 14px;
-      border-radius: 999px;
-    }
+    .search-bar { margin-bottom: 16px; }
+    .search-bar input { width: 100%; max-width: 400px; padding: 10px 14px; border-radius: 999px; }
 
     .toast {
       position: fixed;
@@ -556,13 +429,10 @@
       transform: translateY(100px);
       opacity: 0;
       transition: all 0.3s ease;
-      z-index: 200;
+      z-index: 300;
+      max-width: 360px;
     }
-
-    .toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
+    .toast.show { transform: translateY(0); opacity: 1; }
 
     .theme-toggle {
       position: relative;
@@ -574,27 +444,18 @@
       transition: background 0.3s;
       border: none;
     }
-
     .theme-toggle::after {
       content: '';
       position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 20px;
-      height: 20px;
+      top: 2px; left: 2px;
+      width: 20px; height: 20px;
       border-radius: 50%;
       background: var(--card);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
       transition: transform 0.3s;
     }
-
-    [data-theme="dark"] .theme-toggle {
-      background: var(--primary);
-    }
-
-    [data-theme="dark"] .theme-toggle::after {
-      transform: translateX(20px);
-    }
+    [data-theme="dark"] .theme-toggle { background: var(--primary); }
+    [data-theme="dark"] .theme-toggle::after { transform: translateX(20px); }
 
     .export-preview {
       background: var(--bg);
@@ -616,12 +477,17 @@
       padding: 16px;
       margin-top: 20px;
     }
+    .danger-zone h4 { color: var(--danger); margin-bottom: 8px; font-size: 0.9rem; }
 
-    .danger-zone h4 {
-      color: var(--danger);
-      margin-bottom: 8px;
-      font-size: 0.9rem;
+    .info-zone {
+      border: 1px solid var(--info);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-top: 16px;
+      margin-bottom: 16px;
     }
+    .info-zone h4 { color: var(--info); margin-bottom: 8px; font-size: 0.9rem; }
+    .info-zone p, .danger-zone p { font-size: 0.85rem; color: var(--text2); }
 
     .banner {
       background: linear-gradient(90deg, var(--primary), var(--primary2));
@@ -636,7 +502,6 @@
       gap: 10px;
       flex-wrap: wrap;
     }
-
     .banner button {
       background: rgba(255, 255, 255, 0.2);
       color: white;
@@ -644,38 +509,173 @@
       padding: 6px 12px;
       font-size: 0.8rem;
     }
+    .banner button:hover { background: rgba(255, 255, 255, 0.3); }
 
-    .banner button:hover {
-      background: rgba(255, 255, 255, 0.3);
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 18px 0;
     }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text2);
+      margin-bottom: 10px;
+    }
+
+    .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+    .checkbox-row input { width: auto; }
+    .checkbox-row label { margin: 0; font-size: 0.85rem; color: var(--text); }
+
+    .lock-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 1000;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+    .lock-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      max-width: 480px;
+      width: 100%;
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+    .lock-card h2 {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 6px;
+    }
+    .lock-sub { color: var(--text2); font-size: 0.85rem; margin-bottom: 20px; }
+    .collapsible-header {
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--text2);
+      padding: 8px 0;
+    }
+    .collapsible-body { display: none; padding-top: 8px; }
+    .collapsible-body.open { display: block; }
+    .status-line {
+      font-size: 0.8rem;
+      color: var(--text2);
+      margin-top: 10px;
+      min-height: 18px;
+    }
+    .status-line.error { color: var(--danger); font-weight: 600; }
+    .status-line.ok { color: var(--success); font-weight: 600; }
+    .spin {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
   <base target="_blank">
 </head>
 
 <body>
 
-  <div class="container">
+  <!-- ═══════════════ LOCK SCREEN ═══════════════ -->
+  <div class="lock-screen" id="lockScreen">
+    <div class="lock-card">
+      <h2>🔒 BD Vault</h2>
+      <div class="lock-sub">Everything is encrypted in your browser before it ever leaves this device. Your master password is never sent or stored anywhere.</div>
+
+      <div class="form-group">
+        <label>Master Password</label>
+        <input type="password" id="masterPassword" placeholder="Enter your master password" autocomplete="off">
+      </div>
+
+      <div class="collapsible-header" onclick="toggleGhCollapse()">
+        <span>☁️ GitHub Sync (optional) <span id="ghSummary" style="font-weight:400;"></span></span>
+        <span id="ghChevron">▾</span>
+      </div>
+      <div class="collapsible-body" id="ghCollapseBody">
+        <div class="form-row">
+          <div class="form-group">
+            <label>GitHub Username / Org</label>
+            <input type="text" id="ghOwner" placeholder="e.g. jakir123">
+          </div>
+          <div class="form-group">
+            <label>Repository Name</label>
+            <input type="text" id="ghRepo" placeholder="e.g. bdvault-data">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>File Path</label>
+            <input type="text" id="ghPath" placeholder="vault-data.enc.json" value="vault-data.enc.json">
+          </div>
+          <div class="form-group">
+            <label>Branch</label>
+            <input type="text" id="ghBranch" placeholder="main" value="main">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Personal Access Token (only needed to save / to read a private repo)</label>
+          <input type="password" id="ghToken" placeholder="github_pat_..." autocomplete="off">
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="ghRememberToken">
+          <label for="ghRememberToken">Remember token on this device (stored in localStorage — only enable on a private device)</label>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="ghPrivateRepo">
+          <label for="ghPrivateRepo">This repo is private (always use the API + token to read)</label>
+        </div>
+        <p style="font-size:0.78rem; color:var(--text2); margin-top:4px;">
+          Use a <strong>fine-grained token</strong> scoped only to this one repository, with "Contents: Read and write" permission and nothing else. Create one at
+          <a href="https://github.com/settings/personal-access-tokens/new" target="_blank">github.com/settings/personal-access-tokens/new</a>.
+        </p>
+      </div>
+
+      <div class="status-line" id="lockStatus"></div>
+
+      <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;">
+        <button class="btn btn-primary" style="flex:1;" onclick="unlockVault()">🔓 Unlock / Load Vault</button>
+        <button class="btn btn-ghost" style="flex:1;" onclick="startOfflineVault()">📴 Start Offline (no GitHub)</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="mainApp" style="display:none;">
     <header>
       <h1>
         <div class="logo">BD</div> BD Vault
       </h1>
       <div class="actions">
         <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+        <button class="btn btn-ghost btn-sm" onclick="lockVault()" title="Lock">🔒 Lock</button>
+        <button class="btn btn-ghost btn-sm" onclick="openGhSettings()">⚙️ GitHub</button>
+        <button class="btn btn-ghost btn-sm" onclick="pullFromGitHub(true)">⬇️ Pull</button>
+        <button class="btn btn-ghost btn-sm" onclick="pushToGitHub()">⬆️ Push</button>
         <button class="btn btn-ghost btn-sm" onclick="openImport()">📥 Import</button>
         <button class="btn btn-ghost btn-sm" onclick="openExport()">📤 Export</button>
         <button class="btn btn-primary" onclick="openAdd()">➕ Add New</button>
       </div>
     </header>
 
-    <div class="banner">
-      🔒 <strong>One-Run Mode:</strong> Nothing is saved to browser storage. Data lives only in this tab. Export before
-      closing.
-      <button onclick="openExport()">Export Now</button>
+    <div class="banner" id="modeBanner">
+      🔒 <strong>Encrypted Mode:</strong> Data is encrypted in this browser with your master password before saving. Nothing is ever sent anywhere unencrypted.
     </div>
 
     <div class="search-bar">
-      <input type="text" id="search" placeholder="🔍 Search by bank, name, number, status, or note..."
-        oninput="render()">
+      <input type="text" id="search" placeholder="🔍 Search by bank, name, number, status, or note..." oninput="render()">
     </div>
 
     <div class="tabs" id="tabs">
@@ -696,7 +696,9 @@
   <div class="toast" id="toast">Copied!</div>
 
   <script>
-    /* ─── NO STORAGE POLICY ─── */
+    /* ══════════════════════════════════════════════════════════════
+       CONSTANTS / REFERENCE DATA
+       ══════════════════════════════════════════════════════════════ */
 
     const BANKS = [
       "Dutch-Bangla Bank", "BRAC Bank", "Islami Bank Bangladesh PLC", "Pubali Bank", "Sonali Bank",
@@ -706,25 +708,21 @@
       "Meghna Bank", "Social Islami Bank", "Shahjalal Islami Bank", "NRB Bank", "NRB Commercial Bank",
       "South Bangla Agriculture & Commerce Bank", "The Farmers Bank", "Bengal Commercial Bank"
     ];
-
     const MFS_PROVIDERS = [
       "bKash", "Nagad", "Rocket (DBBL)", "Upay", "Tap (Trust Axiata Pay)",
       "SureCash", "MyCash (Mercantile)", "Meghna Pay", "mCash (Islami Bank)"
     ];
-
     const WALLET_PROVIDERS = [
       "CellFin (Islami Bank)", "NexusPay (DBBL)", "OK Wallet (One Bank)", "TeleCash (Southeast Bank)", "Meghna Pay (Meghna Bank)",
       "FirstCash (FSIBL)", "Islamic Wallet (Al-Arafah)", "City Touch (City Bank)", "EBL SkyBanking (Eastern Bank)",
       "MTB Smart Banking (Mutual Trust Bank)", "AB Direct (AB Bank)", "iBanking (BRAC Bank)",
       "Prime Bank Mobile Banking", "Southeast Bank Digital Wallet", "UCB iBanking"
     ];
-
     const CARD_NETWORKS = ["Visa", "Mastercard", "American Express", "UnionPay", "Diners Club"];
     const CARD_TYPES = ["Debit", "Credit", "Prepaid"];
     const ACCOUNT_TYPES = ["Savings", "Current", "FDR", "DPS", "Loan", "Waqfa"];
     const MFS_TYPES = ["Personal", "Agent", "Merchant"];
     const WALLET_TYPES = ["Personal", "Business", "Agent"];
-
     const STATUSES = [
       { value: "active", label: "🟢 Active" },
       { value: "inactive", label: "⚪ Inactive" },
@@ -739,12 +737,367 @@
       { value: "underreview", label: "🔷 Under Review" }
     ];
 
+    /* ══════════════════════════════════════════════════════════════
+       APP STATE
+       ══════════════════════════════════════════════════════════════ */
+
     let data = [];
     let currentTab = 'all';
     let editingId = null;
     let darkTheme = false;
 
-    function init() { render(); }
+    // Vault password lives ONLY in memory for this tab session. Never persisted.
+    let vaultPassword = null;
+
+    // GitHub sync config. token is kept out of the persisted (session) copy unless remembered.
+    let ghConfig = { owner: '', repo: '', path: 'vault-data.enc.json', branch: 'main', token: '', privateRepo: false };
+
+    /* ══════════════════════════════════════════════════════════════
+       CRYPTO — Web Crypto API (AES-256-GCM + PBKDF2-SHA256)
+       ══════════════════════════════════════════════════════════════ */
+
+    const PBKDF2_ITERATIONS = 300000;
+
+    function randomBytes(n) { return crypto.getRandomValues(new Uint8Array(n)); }
+
+    function toB64(bytes) {
+      let bin = '';
+      bytes.forEach(b => bin += String.fromCharCode(b));
+      return btoa(bin);
+    }
+    function fromB64(b64) {
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return bytes;
+    }
+
+    async function deriveKey(password, saltBytes, iterations) {
+      const enc = new TextEncoder();
+      const baseKey = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: saltBytes, iterations, hash: 'SHA-256' },
+        baseKey,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+    }
+
+    async function encryptVault(obj, password) {
+      const salt = randomBytes(16);
+      const iv = randomBytes(12);
+      const key = await deriveKey(password, salt, PBKDF2_ITERATIONS);
+      const enc = new TextEncoder();
+      const plaintext = enc.encode(JSON.stringify(obj));
+      const ciphertextBuf = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext);
+      return {
+        v: 1,
+        app: 'bdvault',
+        kdf: 'PBKDF2-SHA256',
+        iterations: PBKDF2_ITERATIONS,
+        salt: toB64(salt),
+        iv: toB64(iv),
+        ciphertext: toB64(new Uint8Array(ciphertextBuf)),
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    async function decryptVault(blob, password) {
+      const salt = fromB64(blob.salt);
+      const iv = fromB64(blob.iv);
+      const iterations = blob.iterations || PBKDF2_ITERATIONS;
+      const key = await deriveKey(password, salt, iterations);
+      const ciphertext = fromB64(blob.ciphertext);
+      const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+      const dec = new TextDecoder();
+      return JSON.parse(dec.decode(plainBuf));
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       GITHUB SYNC
+       ══════════════════════════════════════════════════════════════ */
+
+    function toggleGhCollapse() {
+      const body = document.getElementById('ghCollapseBody');
+      const chev = document.getElementById('ghChevron');
+      body.classList.toggle('open');
+      chev.textContent = body.classList.contains('open') ? '▴' : '▾';
+    }
+
+    function readGhFormIntoConfig() {
+      ghConfig.owner = document.getElementById('ghOwner').value.trim();
+      ghConfig.repo = document.getElementById('ghRepo').value.trim();
+      ghConfig.path = document.getElementById('ghPath').value.trim() || 'vault-data.enc.json';
+      ghConfig.branch = document.getElementById('ghBranch').value.trim() || 'main';
+      ghConfig.token = document.getElementById('ghToken').value.trim();
+      ghConfig.privateRepo = document.getElementById('ghPrivateRepo').checked;
+      const remember = document.getElementById('ghRememberToken').checked;
+      persistGhConfig(remember);
+    }
+
+    function persistGhConfig(rememberToken) {
+      const toStore = { ...ghConfig, token: '' };
+      sessionStorage.setItem('bdvault_gh_config', JSON.stringify(toStore));
+      if (rememberToken && ghConfig.token) {
+        localStorage.setItem('bdvault_gh_token', ghConfig.token);
+      } else if (!rememberToken) {
+        localStorage.removeItem('bdvault_gh_token');
+      }
+    }
+
+    function loadGhConfigIntoForm() {
+      try {
+        const raw = sessionStorage.getItem('bdvault_gh_config');
+        if (raw) {
+          const saved = JSON.parse(raw);
+          ghConfig = { ...ghConfig, ...saved };
+        }
+      } catch (e) {}
+      const rememberedToken = localStorage.getItem('bdvault_gh_token');
+      if (rememberedToken) {
+        ghConfig.token = rememberedToken;
+        document.getElementById('ghRememberToken').checked = true;
+      }
+      document.getElementById('ghOwner').value = ghConfig.owner || '';
+      document.getElementById('ghRepo').value = ghConfig.repo || '';
+      document.getElementById('ghPath').value = ghConfig.path || 'vault-data.enc.json';
+      document.getElementById('ghBranch').value = ghConfig.branch || 'main';
+      document.getElementById('ghToken').value = ghConfig.token || '';
+      document.getElementById('ghPrivateRepo').checked = !!ghConfig.privateRepo;
+      updateGhSummary();
+    }
+
+    function updateGhSummary() {
+      const el = document.getElementById('ghSummary');
+      if (!el) return;
+      el.textContent = (ghConfig.owner && ghConfig.repo) ? `— ${ghConfig.owner}/${ghConfig.repo}` : '';
+    }
+
+    async function fetchEncryptedBlobPublic(owner, repo, path, branch) {
+      const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}?_=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error('Could not fetch data file (HTTP ' + res.status + ')');
+      return res.json();
+    }
+
+    async function fetchEncryptedBlobViaApi(owner, repo, path, token, branch) {
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`;
+      const headers = { Accept: 'application/vnd.github+json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch(url, { headers });
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error('GitHub API error ' + res.status + ' (check owner/repo/token/permissions)');
+      const json = await res.json();
+      const content = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))));
+      return { blob: JSON.parse(content), sha: json.sha };
+    }
+
+    async function saveEncryptedBlobToGitHub(owner, repo, path, token, blobObj, branch) {
+      if (!token) throw new Error('A GitHub token with write access is required to push.');
+      let sha = null;
+      const existing = await fetchEncryptedBlobViaApi(owner, repo, path, token, branch);
+      if (existing) sha = existing.sha;
+
+      const contentStr = JSON.stringify(blobObj, null, 2);
+      const b64 = btoa(unescape(encodeURIComponent(contentStr)));
+
+      const body = { message: 'Update encrypted BD Vault data', content: b64, branch };
+      if (sha) body.sha = sha;
+
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`;
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error('GitHub save failed (HTTP ' + res.status + '): ' + errText.slice(0, 200));
+      }
+      return res.json();
+    }
+
+    async function pullFromGitHub(interactive) {
+      if (!ghConfig.owner || !ghConfig.repo) {
+        toast('Set up GitHub sync first (⚙️ GitHub button).', true);
+        return;
+      }
+      if (interactive && !confirm('Pull latest encrypted data from GitHub and replace the current in-memory vault?')) return;
+      try {
+        toast('Pulling from GitHub…');
+        let blob;
+        if (ghConfig.privateRepo || ghConfig.token) {
+          const result = await fetchEncryptedBlobViaApi(ghConfig.owner, ghConfig.repo, ghConfig.path, ghConfig.token, ghConfig.branch);
+          blob = result ? result.blob : null;
+        } else {
+          blob = await fetchEncryptedBlobPublic(ghConfig.owner, ghConfig.repo, ghConfig.path, ghConfig.branch);
+        }
+        if (!blob) { toast('No existing data file found in that repo yet.', true); return; }
+        const decrypted = await decryptVault(blob, vaultPassword);
+        data = decrypted.data || [];
+        render();
+        toast('Pulled and decrypted successfully.');
+      } catch (e) {
+        toast('Pull failed: ' + e.message, true);
+      }
+    }
+
+    async function pushToGitHub() {
+      if (!ghConfig.owner || !ghConfig.repo) {
+        toast('Set up GitHub sync first (⚙️ GitHub button).', true);
+        return;
+      }
+      if (!ghConfig.token) {
+        toast('A token with write access is required to push.', true);
+        openGhSettings();
+        return;
+      }
+      try {
+        toast('Encrypting and pushing…');
+        const blob = await encryptVault({ data }, vaultPassword);
+        await saveEncryptedBlobToGitHub(ghConfig.owner, ghConfig.repo, ghConfig.path, ghConfig.token, blob, ghConfig.branch);
+        toast('Pushed encrypted vault to GitHub.');
+      } catch (e) {
+        toast('Push failed: ' + e.message, true);
+      }
+    }
+
+    function openGhSettings() {
+      const html = `
+        <div class="modal-header"><h2>⚙️ GitHub Sync Settings</h2><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group"><label>GitHub Username / Org</label><input type="text" id="ghOwner2" value="${escapeHtml(ghConfig.owner)}"></div>
+            <div class="form-group"><label>Repository Name</label><input type="text" id="ghRepo2" value="${escapeHtml(ghConfig.repo)}"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>File Path</label><input type="text" id="ghPath2" value="${escapeHtml(ghConfig.path)}"></div>
+            <div class="form-group"><label>Branch</label><input type="text" id="ghBranch2" value="${escapeHtml(ghConfig.branch)}"></div>
+          </div>
+          <div class="form-group">
+            <label>Personal Access Token</label>
+            <input type="password" id="ghToken2" value="${escapeHtml(ghConfig.token)}" placeholder="github_pat_...">
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="ghRememberToken2" ${localStorage.getItem('bdvault_gh_token') ? 'checked' : ''}>
+            <label for="ghRememberToken2">Remember token on this device (localStorage)</label>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="ghPrivateRepo2" ${ghConfig.privateRepo ? 'checked' : ''}>
+            <label for="ghPrivateRepo2">This repo is private (always use API + token to read)</label>
+          </div>
+          <div class="info-zone">
+            <h4>ℹ️ How this works</h4>
+            <p>Only an AES-256-GCM encrypted blob is ever written to this repo. Use a fine-grained token scoped to just this repository with "Contents: Read and write" permission — nothing else.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveGhSettingsFromModal()">Save Settings</button>
+        </div>
+      `;
+      openModal(html);
+    }
+
+    function saveGhSettingsFromModal() {
+      ghConfig.owner = document.getElementById('ghOwner2').value.trim();
+      ghConfig.repo = document.getElementById('ghRepo2').value.trim();
+      ghConfig.path = document.getElementById('ghPath2').value.trim() || 'vault-data.enc.json';
+      ghConfig.branch = document.getElementById('ghBranch2').value.trim() || 'main';
+      ghConfig.token = document.getElementById('ghToken2').value.trim();
+      ghConfig.privateRepo = document.getElementById('ghPrivateRepo2').checked;
+      const remember = document.getElementById('ghRememberToken2').checked;
+      persistGhConfig(remember);
+      closeModal();
+      toast('GitHub settings saved for this session.');
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       LOCK SCREEN / VAULT LIFECYCLE
+       ══════════════════════════════════════════════════════════════ */
+
+    function setLockStatus(msg, type) {
+      const el = document.getElementById('lockStatus');
+      el.textContent = msg || '';
+      el.className = 'status-line' + (type ? ' ' + type : '');
+    }
+
+    async function unlockVault() {
+      const pw = document.getElementById('masterPassword').value;
+      if (!pw) { setLockStatus('Enter a master password.', 'error'); return; }
+      vaultPassword = pw;
+      readGhFormIntoConfig();
+
+      if (!ghConfig.owner || !ghConfig.repo) {
+        // No GitHub configured — just start a fresh in-memory vault under this password.
+        data = [];
+        enterApp();
+        toast('Vault unlocked (offline — no GitHub configured).');
+        return;
+      }
+
+      setLockStatus('Connecting to GitHub…');
+      try {
+        let blob;
+        if (ghConfig.privateRepo || ghConfig.token) {
+          const result = await fetchEncryptedBlobViaApi(ghConfig.owner, ghConfig.repo, ghConfig.path, ghConfig.token, ghConfig.branch);
+          blob = result ? result.blob : null;
+        } else {
+          blob = await fetchEncryptedBlobPublic(ghConfig.owner, ghConfig.repo, ghConfig.path, ghConfig.branch);
+        }
+
+        if (!blob) {
+          data = [];
+          enterApp();
+          toast('No existing vault file found — starting fresh. Use "Push" to create it.');
+          return;
+        }
+
+        const decrypted = await decryptVault(blob, pw);
+        data = decrypted.data || [];
+        enterApp();
+        toast('Vault unlocked and loaded from GitHub.');
+      } catch (e) {
+        setLockStatus('Failed: ' + e.message + ' — check password / repo settings.', 'error');
+      }
+    }
+
+    function startOfflineVault() {
+      const pw = document.getElementById('masterPassword').value;
+      if (!pw) { setLockStatus('Enter a master password first (used to encrypt local exports).', 'error'); return; }
+      vaultPassword = pw;
+      data = [];
+      enterApp();
+      toast('Offline vault started. Nothing synced anywhere.');
+    }
+
+    function enterApp() {
+      document.getElementById('lockScreen').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+      updateGhSummary();
+      render();
+    }
+
+    function lockVault() {
+      if (!confirm('Lock the vault? Any unsynced changes not pushed to GitHub or exported will be lost from memory.')) return;
+      vaultPassword = null;
+      data = [];
+      document.getElementById('masterPassword').value = '';
+      document.getElementById('mainApp').style.display = 'none';
+      document.getElementById('lockScreen').style.display = 'grid';
+      setLockStatus('');
+      toast('Vault locked.');
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       RENDERING
+       ══════════════════════════════════════════════════════════════ */
 
     function toggleTheme() {
       darkTheme = !darkTheme;
@@ -789,7 +1142,6 @@
         </div>`;
         return;
       }
-
       grid.innerHTML = filtered.map(item => renderCard(item)).join('');
     }
 
@@ -898,7 +1250,6 @@
       const lines = [];
       if (item.title) lines.push(`Title: ${item.title}`);
       lines.push(`Status: ${item.status || 'active'}`);
-
       if (item.type === 'bank') {
         lines.push(`Bank: ${item.bankName}`);
         lines.push(`Account Name: ${item.accountName}`);
@@ -925,7 +1276,6 @@
         lines.push(`Number: ${item.accountNumber}`);
         if (item.walletType) lines.push(`Type: ${item.walletType}`);
       }
-
       if (item.pin) lines.push(`PIN: ${item.pin}`);
       if (item.pinHint) lines.push(`PIN Hint: ${item.pinHint}`);
       if (item.notes) lines.push(`Notes: ${item.notes}`);
@@ -942,7 +1292,8 @@
       t.textContent = msg;
       t.style.background = error ? 'var(--danger)' : 'var(--text)';
       t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2000);
+      clearTimeout(t._hideTimer);
+      t._hideTimer = setTimeout(() => t.classList.remove('show'), 2800);
     }
 
     function openModal(html) {
@@ -953,6 +1304,10 @@
       document.getElementById('modalOverlay').classList.remove('open');
       editingId = null;
     }
+
+    /* ══════════════════════════════════════════════════════════════
+       ADD / EDIT
+       ══════════════════════════════════════════════════════════════ */
 
     function openAdd() {
       const html = `
@@ -1099,7 +1454,7 @@
       }
       render();
       closeModal();
-      toast(editingId ? 'Updated!' : 'Saved!');
+      toast(editingId ? 'Updated! Remember to Push to save to GitHub.' : 'Saved! Remember to Push to save to GitHub.');
     }
 
     function editItem(id) {
@@ -1136,31 +1491,79 @@
       if (!confirm('Are you sure you want to delete this record?')) return;
       data = data.filter(d => d.id !== id);
       render();
-      toast('Deleted');
+      toast('Deleted. Remember to Push to save to GitHub.');
     }
+
+    /* ══════════════════════════════════════════════════════════════
+       EXPORT (encrypted + plaintext)
+       ══════════════════════════════════════════════════════════════ */
 
     function openExport() {
       const md = generateMD();
       const txt = generateTXT();
       const html = `
-        <div class="modal-header"><h2>📤 Export Offline Backup</h2><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
+        <div class="modal-header"><h2>📤 Export Backup</h2><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
         <div class="modal-body">
-          <p style="margin-bottom:12px; color:var(--text2); font-size:0.9rem;">Save your data to a <strong>.txt</strong> or <strong>.md</strong> file. Keep it somewhere safe (USB, encrypted drive, etc.).</p>
+          <div class="info-zone">
+            <h4>🔒 Encrypted Backup (recommended — safe to upload anywhere)</h4>
+            <p>A single AES-256-GCM encrypted file, protected by your current master password. Contains everything in your vault.</p>
+            <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="downloadEncryptedVaultFile()">⬇️ Download .vault.json (encrypted)</button>
+              <button class="btn btn-ghost" onclick="copyEncryptedVaultFile()">📋 Copy encrypted JSON</button>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <div class="section-label">Plaintext Backup (unencrypted — offline use only)</div>
           <label>Markdown (.md) Preview</label>
           <div class="export-preview">${escapeHtml(md)}</div>
           <div class="form-row">
-            <button class="btn btn-primary" onclick="downloadFile('${escapeJs(md)}', 'bdvault_backup.md', 'text/markdown')">⬇️ Download .md</button>
-            <button class="btn btn-ghost" onclick="downloadFile('${escapeJs(txt)}', 'bdvault_backup.txt', 'text/plain')">⬇️ Download .txt</button>
-            <button class="btn btn-ghost" onclick="copy('${escapeJs(md)}')">📋 Copy .md</button>
-            <button class="btn btn-ghost" onclick="copy('${escapeJs(txt)}')">📋 Copy .txt</button>
+            <button class="btn btn-ghost" onclick="downloadPlainFile('md')">⬇️ Download .md</button>
+            <button class="btn btn-ghost" onclick="downloadPlainFile('txt')">⬇️ Download .txt</button>
           </div>
+          <div class="form-row" style="margin-top:8px;">
+            <button class="btn btn-ghost" onclick="copyPlainFile('md')">📋 Copy .md</button>
+            <button class="btn btn-ghost" onclick="copyPlainFile('txt')">📋 Copy .txt</button>
+          </div>
+
           <div class="danger-zone">
             <h4>⚠️ Security Warning</h4>
-            <p style="font-size:0.85rem; color:var(--text2);">Exported files are <strong>unencrypted</strong>. Store them in an encrypted folder or password-protected ZIP. Do not upload to cloud without encryption.</p>
+            <p>The .md and .txt exports are <strong>plaintext</strong> — anyone who opens them can read every PIN and CVV. Never upload these to GitHub, cloud drives, or shared hosting. Only the encrypted .vault.json is safe for that.</p>
           </div>
         </div>
       `;
       openModal(html);
+      // stash the plain text so download/copy handlers don't need risky string-escaping in onclick attrs
+      window._exportMd = md;
+      window._exportTxt = txt;
+    }
+
+    async function downloadEncryptedVaultFile() {
+      try {
+        const blob = await encryptVault({ data }, vaultPassword);
+        downloadFile(JSON.stringify(blob, null, 2), 'bdvault-backup.vault.json', 'application/json');
+      } catch (e) {
+        toast('Encryption failed: ' + e.message, true);
+      }
+    }
+    async function copyEncryptedVaultFile() {
+      try {
+        const blob = await encryptVault({ data }, vaultPassword);
+        navigator.clipboard.writeText(JSON.stringify(blob, null, 2)).then(() => toast('Encrypted JSON copied!'));
+      } catch (e) {
+        toast('Encryption failed: ' + e.message, true);
+      }
+    }
+
+    function downloadPlainFile(kind) {
+      const content = kind === 'md' ? window._exportMd : window._exportTxt;
+      const mime = kind === 'md' ? 'text/markdown' : 'text/plain';
+      downloadFile(content, `bdvault_backup.${kind}`, mime);
+    }
+    function copyPlainFile(kind) {
+      const content = kind === 'md' ? window._exportMd : window._exportTxt;
+      navigator.clipboard.writeText(content).then(() => toast('Copied!'));
     }
 
     function generateMD() {
@@ -1196,22 +1599,58 @@
       toast('Download started!');
     }
 
+    /* ══════════════════════════════════════════════════════════════
+       IMPORT (encrypted + plaintext)
+       ══════════════════════════════════════════════════════════════ */
+
     function openImport() {
       const html = `
-        <div class="modal-header"><h2>📥 Import from File</h2><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
+        <div class="modal-header"><h2>📥 Import Backup</h2><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
         <div class="modal-body">
-          <p style="margin-bottom:12px; color:var(--text2); font-size:0.9rem;">Paste your exported <strong>.txt</strong> or <strong>.md</strong> content below. This will <strong>replace</strong> current session data.</p>
-          <div class="form-group">
-            <textarea id="importArea" style="min-height:180px;" placeholder="Paste backup content here..."></textarea>
+          <div class="info-zone">
+            <h4>🔒 Import Encrypted (.vault.json)</h4>
+            <p>Paste the encrypted JSON, or choose a file. Decrypted with your current master password.</p>
+            <input type="file" id="importEncFile" accept=".json,.vault.json,application/json" style="margin-bottom:10px;">
+            <textarea id="importEncArea" style="min-height:100px;" placeholder="...or paste encrypted JSON here"></textarea>
+            <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="runEncryptedImport()">Decrypt & Import</button>
           </div>
-          <button class="btn btn-primary" style="width:100%;" onclick="runImport()">Import & Replace</button>
+
+          <hr class="divider">
+
+          <div class="section-label">Import Plaintext (.txt / .md)</div>
+          <div class="form-group">
+            <textarea id="importArea" style="min-height:160px;" placeholder="Paste plaintext backup content here..."></textarea>
+          </div>
+          <button class="btn btn-ghost" style="width:100%;" onclick="runImport()">Import Plaintext & Replace</button>
+
           <div class="danger-zone" style="margin-top:16px;">
             <h4>⚠️ Warning</h4>
-            <p style="font-size:0.85rem; color:var(--text2);">Importing will overwrite all current session records. Make sure you have a backup if needed.</p>
+            <p>Importing replaces all current in-memory session records. Push to GitHub afterward if you want it saved.</p>
           </div>
         </div>
       `;
       openModal(html);
+    }
+
+    async function runEncryptedImport() {
+      const fileInput = document.getElementById('importEncFile');
+      let text = document.getElementById('importEncArea').value.trim();
+      try {
+        if (fileInput.files && fileInput.files[0]) {
+          text = await fileInput.files[0].text();
+        }
+        if (!text) { toast('Provide a file or paste encrypted JSON.', true); return; }
+        const blob = JSON.parse(text);
+        const decrypted = await decryptVault(blob, vaultPassword);
+        const incoming = decrypted.data || [];
+        if (!confirm(`Found ${incoming.length} records. Replace current session data?`)) return;
+        data = incoming;
+        render();
+        closeModal();
+        toast('Encrypted import successful!');
+      } catch (e) {
+        toast('Decryption failed: ' + e.message + ' (wrong password, or not a valid vault file)', true);
+      }
     }
 
     function runImport() {
@@ -1255,7 +1694,6 @@
         }
 
         if (current) {
-          // 1. Force context identification before resolving generic values
           if (!current.type) {
             if (current.cardNumber || current.cardName || current.isCardContext) {
               current.type = 'card';
@@ -1265,13 +1703,10 @@
               current.type = 'bank';
             }
           }
-
-          // 2. Fix mapping mismatch: Move temp values to their proper places based on the type
           if (current.type === 'card' && current.accountNumber && !current.cardNumber) {
             current.cardNumber = current.accountNumber;
             delete current.accountNumber;
           }
-
           if (current.tempTypeField) {
             const t = current.tempTypeField;
             if (current.type === 'card') current.cardType = t;
@@ -1280,8 +1715,6 @@
             else current.accountType = t;
             delete current.tempTypeField;
           }
-
-          // Clean temporary context flags
           delete current.isCardContext;
 
           if (current.accountNumber || current.cardNumber || current.title) {
@@ -1303,7 +1736,7 @@
       else if (k === 'title' || k === 'label') { item.title = v; }
       else if (k.includes('bank') && !k.includes('name')) { item.bankName = v; }
       else if (k === 'account name' || k === 'name') { item.accountName = v; }
-      else if (k === 'account number' || k === 'number') { item.accountNumber = v; } // Staged safely here first
+      else if (k === 'account number' || k === 'number') { item.accountNumber = v; }
       else if (k === 'branch') { item.branch = v; }
       else if (k === 'routing' || k === 'routing number') { item.routing = v; }
       else if (k === 'card' || k === 'card name') { item.cardName = v; item.type = 'card'; }
@@ -1312,10 +1745,7 @@
       else if (k === 'card type') { item.cardType = v; item.type = 'card'; }
       else if (k === 'expiry') { item.expiry = v; item.isCardContext = true; }
       else if (k === 'cvv') { item.cvv = v; item.isCardContext = true; }
-      else if (k === 'provider') {
-        item.provider = v;
-        item.type = WALLET_PROVIDERS.includes(v) ? 'wallet' : 'mfs';
-      }
+      else if (k === 'provider') { item.provider = v; item.type = WALLET_PROVIDERS.includes(v) ? 'wallet' : 'mfs'; }
       else if (k === 'type') {
         if (item.type === 'card') item.cardType = v;
         else if (item.type === 'mfs') item.mfsType = v;
@@ -1330,15 +1760,26 @@
 
     function escapeHtml(str) {
       if (!str) return '';
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
     function escapeJs(str) {
       if (!str) return '';
-      return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
+      return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
     }
     function escapeMd(str) {
       if (!str) return '';
-      return str.replace(/[\*_{}[\]()#+\-.!]/g, '\\$&');
+      return String(str).replace(/[\*_{}[\]()#+\-.!]/g, '\\$&');
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       INIT
+       ══════════════════════════════════════════════════════════════ */
+
+    function init() {
+      loadGhConfigIntoForm();
+      window.addEventListener('beforeunload', () => {
+        // Extra safety: never leave a plaintext password sitting around.
+      });
     }
 
     init();
