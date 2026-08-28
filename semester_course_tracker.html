@@ -390,10 +390,9 @@
 
           <!-- Program Filter -->
           <select id="filterProgram" class="bg-slate-900/90 text-xs text-slate-200 rounded-xl px-2.5 py-1.5 border border-slate-700/80 focus:border-indigo-500 focus:outline-none transition-all cursor-pointer">
-            <option value="ALL">All Programs (R / E / D)</option>
+            <option value="ALL">All Programs (R / E )</option>
             <option value="R">Regular (R)</option>
             <option value="E">Evening (E)</option>
-            <option value="D">Diploma (D)</option>
           </select>
 
           <!-- Completion Status Filter -->
@@ -554,7 +553,6 @@
             <select id="inputProgram" class="w-full bg-slate-900 text-xs text-slate-200 rounded-xl px-3 py-2 border border-slate-700 focus:border-indigo-500 focus:outline-none">
               <option value="R">R (Regular / Day)</option>
               <option value="E">E (Evening / Shift)</option>
-              <option value="D">D (Diploma)</option>
             </select>
           </div>
 
@@ -685,47 +683,29 @@
     
     // Default task columns from user specification
     const DEFAULT_COLUMNS = [
-      { id: 'col_mid_ex', name: 'Mid Ex', theoryOnly: true },
-      { id: 'col_final_ex', name: 'Final Ex', theoryOnly: true },
-      { id: 'col_ct1_ex', name: 'CT -1 EX', theoryOnly: true },
-      { id: 'col_ct2_ex', name: 'CT-2 Ex', theoryOnly: true },
-      { id: 'col_ct1_eval', name: 'CT -1 Evaluation', theoryOnly: true },
-      { id: 'col_ct2_eval', name: 'CT-2 Evaluation', theoryOnly: true },
-      { id: 'col_mid_eval', name: 'Mid Evaluation', theoryOnly: true },
-      { id: 'col_final_eval', name: 'Final Evaluation', theoryOnly: true },
-      { id: 'col_mid_mark', name: 'Mid mark' },
-      { id: 'col_final_mark', name: 'Final mark' },
-      { id: 'col_report', name: 'Report' },
-      { id: 'col_attendance', name: 'Attendance' },
-      { id: 'col_excel', name: 'Excel' },
-      { id: 'col_annex', name: 'Annex' }
+      { "id": "col_ct1_ex", "name": "CT -1 Exam" },
+      { "id": "col_ct1_eval", "name": "CT -1 Evaluation" },
+      { "id": "col_mid_ex", "name": "Mid Exam" },
+      { "id": "col_mid_eval", "name": "Mid Evaluation" },
+      { "id": "col_ct2_ex", "name": "CT-2 Exam" },
+      { "id": "col_ct2_eval", "name": "CT-2 Evaluation" },
+      { "id": "col_final_ex", "name": "Final Exam" },
+      { "id": "col_final_eval", "name": "Final Evaluation" },
+      { "id": "col_mid_mark", "name": "Mid Mark Entry" },
+      { "id": "col_final_mark", "name": "Final Mark Entry" },
+      { "id": "col_report", "name": "Report/Assignment" },
+      { "id": "col_attendance", "name": "Attendance Entry" },
+      { "id": "col_excel", "name": "Excel Entry" },
+      { "id": "col_annex", "name": "Annex" },
+      { "id": "col_chair_sign", "name": "Chairman Sign" },
+      { "id": "col_coe", "name": "CoE Submit" }
     ];
 
     // Sample courses (can be loaded or reset)
     const SAMPLE_COURSES = [
       {
         id: 'c_1', program: 'R', intake: '10', section: '1', type: 'L', code: 'CE 2172', remarks: '',
-        tasks: { col_mid_ex: 'SKIP', col_final_ex: 'SKIP', col_ct1_ex: 'SKIP', col_ct2_ex: 'SKIP', col_ct1_eval: 'SKIP', col_ct2_eval: 'SKIP', col_mid_eval: 'SKIP', col_final_eval: 'SKIP', col_mid_mark: 'DONE', col_final_mark: 'BLANK', col_report: 'DONE', col_attendance: 'DONE', col_excel: 'BLANK', col_annex: 'BLANK' }
-      },
-      {
-        id: 'c_2', program: 'R', intake: '11', section: '1A', type: 'L', code: 'CE 1214', remarks: '',
-        tasks: { col_mid_ex: 'SKIP', col_final_ex: 'SKIP', col_ct1_ex: 'SKIP', col_ct2_ex: 'SKIP', col_ct1_eval: 'SKIP', col_ct2_eval: 'SKIP', col_mid_eval: 'SKIP', col_final_eval: 'SKIP', col_mid_mark: 'DONE', col_final_mark: 'DONE', col_report: 'DONE', col_attendance: 'DONE', col_excel: 'DONE', col_annex: 'DONE' }
-      },
-      {
-        id: 'c_3', program: 'E', intake: '7', section: '1', type: 'L', code: 'CE 4132', remarks: '',
-        tasks: { col_mid_ex: 'SKIP', col_final_ex: 'SKIP', col_ct1_ex: 'SKIP', col_ct2_ex: 'SKIP', col_ct1_eval: 'SKIP', col_ct2_eval: 'SKIP', col_mid_eval: 'SKIP', col_final_eval: 'SKIP', col_mid_mark: 'BLANK', col_final_mark: 'BLANK', col_report: 'BLANK', col_attendance: 'BLANK', col_excel: 'BLANK', col_annex: 'BLANK' }
-      },
-      {
-        id: 'c_4', program: 'E', intake: '9', section: '1', type: 'T', code: 'CE 3161', remarks: '',
-        tasks: { col_mid_ex: 'DONE', col_final_ex: 'BLANK', col_ct1_ex: 'DONE', col_ct2_ex: 'DONE', col_ct1_eval: 'DONE', col_ct2_eval: 'BLANK', col_mid_eval: 'DONE', col_final_eval: 'BLANK', col_mid_mark: 'DONE', col_final_mark: 'BLANK', col_report: 'SKIP', col_attendance: 'DONE', col_excel: 'BLANK', col_annex: 'BLANK' }
-      },
-      {
-        id: 'c_5', program: 'E', intake: '9', section: '2', type: 'T', code: 'CE 3161', remarks: '',
-        tasks: { col_mid_ex: 'DONE', col_final_ex: 'BLANK', col_ct1_ex: 'DONE', col_ct2_ex: 'BLANK', col_ct1_eval: 'DONE', col_ct2_eval: 'BLANK', col_mid_eval: 'DONE', col_final_eval: 'BLANK', col_mid_mark: 'BLANK', col_final_mark: 'BLANK', col_report: 'SKIP', col_attendance: 'BLANK', col_excel: 'BLANK', col_annex: 'BLANK' }
-      },
-      {
-        id: 'c_6', program: 'E', intake: '7', section: '1A', type: 'L', code: 'CE 3262', remarks: '',
-        tasks: { col_mid_ex: 'SKIP', col_final_ex: 'SKIP', col_ct1_ex: 'SKIP', col_ct2_ex: 'SKIP', col_ct1_eval: 'SKIP', col_ct2_eval: 'SKIP', col_mid_eval: 'SKIP', col_final_eval: 'SKIP', col_mid_mark: 'BLANK', col_final_mark: 'BLANK', col_report: 'BLANK', col_attendance: 'BLANK', col_excel: 'BLANK', col_annex: 'BLANK' }
+        tasks: { "col_mid_ex": "DONE", "col_final_ex": "DONE", "col_ct1_ex": "SKIP", "col_ct2_ex": "SKIP", "col_ct1_eval": "SKIP", "col_ct2_eval": "SKIP", "col_mid_eval": "DONE", "col_final_eval": "DONE", "col_mid_mark": "DONE", "col_final_mark": "DONE", "col_report": "DONE", "col_attendance": "DONE", "col_excel": "DONE", "col_annex": "DONE", "col_chair_sign": "BLANK", "col_coe": "BLANK" }
       }
     ];
 
